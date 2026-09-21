@@ -91,10 +91,26 @@ funziona su entrambe senza modifiche.
    `dist`. Se non ti mostra il modulo con "Framework preset" e "Production
    branch", è normale: quel passaggio non c'è più.
 5. **Prima di lanciare il build** aggiungi le tre variabili (vedi sotto).
-6. Conferma. Un paio di minuti e hai un indirizzo
-   `app-ale.<tuo-sottodominio>.workers.dev`.
+6. Conferma. Un paio di minuti e il build è fatto.
 
-Per cambiare nome o mettere un dominio tuo: **Settings** → **Domains & Routes**.
+#### Accendere l'indirizzo
+
+Il sito pubblicato non è ancora raggiungibile: Cloudflare prepara l'indirizzo
+ma lo lascia spento, e nella pagina del Worker leggi *"No URLs enabled"*.
+
+Vai sulla scheda **Domains** del tuo Worker. Nel riquadro **Worker URL**
+trovi due righe con un interruttore a destra:
+
+| | |
+|---|---|
+| **Production** · `app-ale.<tuo-sottodominio>.workers.dev` | ⬅ accendi questo |
+| Preview · `*-app-ale.<tuo-sottodominio>.workers.dev` | lascialo spento |
+
+Accendi **Production**: dopo una trentina di secondi il sito risponde a quell
+indirizzo, ed è quello che aprirete dal telefono. Il `Preview` serve solo a
+provare branch secondari; tenendolo spento eviti copie del sito in giro.
+
+Per aggiungere un dominio tuo: stessa pagina, **Add Domain**.
 
 #### Dove vanno le variabili, qui
 
