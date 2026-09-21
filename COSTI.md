@@ -5,7 +5,7 @@ nel vostro caso concreto: due persone, qualche viaggio all'anno, foto.
 
 > **In breve:** l'app può restare gratuita per anni. L'unico limite che
 > incontrerete davvero è **1 GB di foto su Supabase**, e ci arriverete
-> intorno ai 3.000 scatti. Per pubblicare il sito conviene **Cloudflare Pages**
+> intorno ai 3.000 scatti. Per pubblicare il sito conviene **Cloudflare**
 > invece di Netlify: per un'app come questa è gratis senza limiti di traffico,
 > e non ha il tetto di pubblicazioni mensili che ha bloccato Netlify.
 
@@ -60,7 +60,7 @@ Quindi:
 - ❌ non serve cancellare il sito;
 - ❌ non serve pagare;
 - ✅ o aspetti il rinnovo del ciclo di fatturazione, ✅ oppure sposti il sito su
-  Cloudflare Pages (vedi sotto), che per questo tipo di app non ha questo
+  Cloudflare (vedi sotto), che per questo tipo di app non ha questo
   problema.
 
 ### Se vedi 30 crediti invece di 300
@@ -80,7 +80,7 @@ restano bloccati lo stesso.
 1. Aprire una discussione sul **forum di supporto Netlify** (è il canale per
    il piano gratuito: non c'è assistenza via ticket) indicando il nome del
    team e chiedendo di sbloccare il flag e ripristinare l'accredito corretto.
-2. Non aspettare e pubblicare su **Cloudflare Pages**, dove il problema non
+2. Non aspettare e pubblicare su **Cloudflare**, dove il problema non
    si pone. È quello che consiglio: il lavoro è già pronto nel repository.
 
 Se invece i crediti risultassero effettivamente consumati, allora è
@@ -89,26 +89,34 @@ successivo — nel tuo caso il **29 settembre**.
 
 ---
 
-## 2 · Cloudflare Pages: perché conviene per questa app
+## 2 · Cloudflare: perché conviene per questa app
 
 Noi Due è un sito **completamente statico** che parla con Supabase: file HTML,
 JavaScript e CSS, nessun codice che gira sul server dell'hosting. È
-esattamente lo scenario in cui Cloudflare Pages è gratuito sul serio.
+esattamente lo scenario in cui Cloudflare è gratuito sul serio, perché **le
+richieste ai file statici non vengono né contate né fatturate**, su nessun
+piano. Si paga solo quando c'è del codice che gira lato server, e qui non ce
+n'è.
 
-| | Netlify Free | Cloudflare Pages Free |
+| | Netlify Free | Cloudflare Free |
 |---|---|---|
 | Traffico | ~15 GB (a crediti) | **illimitato** |
-| Richieste | a crediti | **illimitate** |
-| Pubblicazioni al mese | ~20 | **500** |
+| Richieste ai file statici | a crediti | **illimitate, non fatturate** |
+| Pubblicazioni al mese | ~20 | 3.000 minuti di build, cioè **oltre mille** |
 | Blocco a fine crediti | sì | non previsto |
 | Dominio personalizzato + HTTPS | sì | sì |
 
-Per un sito statico Cloudflare non misura la banda: i limiti sopra, con due
-utenti, non li sfiorerete mai. La procedura è nel [SETUP.md](SETUP.md), sezione
-*Pubblicare su Cloudflare Pages*, ed è la stessa lunghezza di quella Netlify.
+Il build di Noi Due dura poco più di un minuto: i 3.000 minuti inclusi sono
+un tetto che non vedrete mai.
 
-Il repository contiene già `public/_redirects`, che va bene per entrambi: puoi
-tenere i due hosting in parallelo senza toccare il codice.
+> **Nota sul nome.** Cloudflare ha spostato anche i siti statici sotto
+> **Workers**: la vecchia sezione "Pages" non è più il punto di partenza per
+> un progetto nuovo. Cambia il percorso nel pannello, non la sostanza né i
+> costi. La procedura aggiornata è nel [SETUP.md](SETUP.md), *Opzione A*.
+
+Il repository contiene `wrangler.jsonc` (per Cloudflare) e `public/_redirects`
+(per Netlify e per la vecchia Pages): puoi tenere i due hosting in parallelo
+senza toccare il codice.
 
 ---
 
@@ -166,7 +174,7 @@ Prima di pagare ci sono due strade più economiche:
 
 | | Oggi | Fra 5 anni, uso intenso |
 |---|---|---|
-| Hosting (Cloudflare Pages) | 0 € | 0 € |
+| Hosting (Cloudflare) | 0 € | 0 € |
 | Dati e foto (Supabase Free) | 0 € | 0 € o 25 $/mese se superate 1 GB di foto |
 | Dominio personalizzato (facoltativo) | 0 € | ~12 €/anno se volete `noidue.it` |
 

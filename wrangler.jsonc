@@ -1,0 +1,18 @@
+{
+  // Configurazione per pubblicare su Cloudflare.
+  //
+  // Senza questo file wrangler prova a indovinare da solo come è fatto il
+  // progetto, riconosce Vite e pretende la versione 6 o successiva per il suo
+  // plugin. A noi quel plugin non serve: Noi Due è un sito statico, non deve
+  // eseguire nulla sul server di Cloudflare. Dichiarando gli asset qui sotto,
+  // wrangler si limita a pubblicare la cartella dist e il problema sparisce.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "app-ale",
+  "compatibility_date": "2026-09-01",
+  "assets": {
+    "directory": "./dist",
+    // Qualsiasi indirizzo che non corrisponde a un file serve index.html:
+    // è quello che permette di aprire /tutte o /impostazioni direttamente.
+    "not_found_handling": "single-page-application"
+  }
+}

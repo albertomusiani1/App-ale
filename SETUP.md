@@ -10,7 +10,7 @@ Il giro è questo:
 GitHub (il codice)  →  l'hosting (pubblica il sito)  →  Supabase (dati e foto)
 ```
 
-Per l'hosting ci sono due strade, entrambe gratuite. **Cloudflare Pages** è
+Per l'hosting ci sono due strade, entrambe gratuite. **Cloudflare** è
 quella che consiglio: per un sito come questo non ha limiti di traffico né di
 pubblicazioni. **Netlify** funziona altrettanto bene, ma il piano gratuito
 concede circa 20 pubblicazioni al mese e poi si ferma fino al mese dopo.
@@ -73,25 +73,54 @@ Tieni aperta questa pagina, ti servono fra un minuto.
 Scegli **una** delle due. Puoi anche tenerle tutte e due: il repository
 funziona su entrambe senza modifiche.
 
-### Opzione A · Cloudflare Pages — consigliata
+### Opzione A · Cloudflare — consigliata
+
+> Cloudflare ha cambiato questo flusso: oggi anche i siti statici passano da
+> **Workers**, non più dalla vecchia sezione Pages, e non chiede più branch e
+> framework in un modulo da compilare: li rileva da solo dal repository. Il
+> repository contiene già `wrangler.jsonc`, che gli dice tutto il necessario.
 
 1. Vai su **https://dash.cloudflare.com** e registrati (gratis).
-2. Nel menù a sinistra: **Workers & Pages** → **Create** → scheda **Pages** →
-   **Connect to Git**.
+2. Menù a sinistra: **Compute (Workers)** → **Create** (oppure
+   **Workers & Pages** → **Create**, a seconda di come te lo presenta) →
+   **Import a repository**.
 3. Autorizza GitHub e scegli il repository **App-ale**.
-4. Compila così:
-   - **Production branch**: il branch dove sta il codice
-     (`claude/couple-gamification-app-5p9slb`, oppure `main` se l'hai unito);
-   - **Framework preset**: `Vite`;
-   - **Build command**: `npm run build`;
-   - **Build output directory**: `dist`.
-5. Apri **Environment variables** e aggiungi le tre righe della tabella qui
-   sotto, **prima** di lanciare il build.
-6. **Save and Deploy**. Un paio di minuti e hai un indirizzo
-   `nome-progetto.pages.dev`.
+4. Se ti chiede il branch, scegli quello dove sta il codice
+   (`claude/couple-gamification-app-5p9slb`, oppure `main` se l'hai unito).
+   Comando di build e cartella di uscita li rileva da solo: `npm run build` e
+   `dist`. Se non ti mostra il modulo con "Framework preset" e "Production
+   branch", è normale: quel passaggio non c'è più.
+5. **Prima di lanciare il build** aggiungi le tre variabili (vedi sotto).
+6. Conferma. Un paio di minuti e hai un indirizzo
+   `app-ale.<tuo-sottodominio>.workers.dev`.
 
-Per cambiare il nome: **Settings** → **General** → il progetto si può
-rinominare, oppure aggiungi un dominio tuo da **Custom domains**.
+Per cambiare nome o mettere un dominio tuo: **Settings** → **Domains & Routes**.
+
+#### Dove vanno le variabili, qui
+
+È il punto in cui ci si incastra. Le tre variabili servono **durante il
+build**, non mentre il sito gira, perché Vite le incorpora nel codice
+compilato. Vanno quindi fra le variabili di build, non fra quelle del Worker:
+
+**Workers & Pages** → il tuo Worker → **Settings** → **Build** →
+**Variables and secrets**.
+
+Se le metti nella sezione sbagliata il build riesce lo stesso, ma l'app parte
+in modalità locale e i dati non si sincronizzano fra i due telefoni.
+
+#### Se il build fallisce con un errore su Vite
+
+> `The version of Vite used in the project ("5.4.21") cannot be automatically
+> configured. Please update the Vite version to at least "6.0.0"`
+
+Significa che Cloudflare sta cercando di configurare da solo il suo plugin per
+Vite. A noi non serve: Noi Due è un sito statico e non esegue niente sui
+server di Cloudflare. Il file **`wrangler.jsonc`** nella radice del repository
+gli dice di pubblicare e basta la cartella `dist`, e l'errore sparisce.
+
+Se lo vedi ancora, il branch che Cloudflare sta compilando non contiene quel
+file: aggiornalo all'ultima versione del codice e rilancia il build da
+**Deployments** → **Retry**.
 
 ### Opzione B · Netlify
 
@@ -128,7 +157,7 @@ I nomi vanno scritti **esattamente così**, maiuscole comprese.
 Vengono lette **durante il build**, non quando apri il sito: dopo averle
 modificate serve una nuova pubblicazione.
 
-- Cloudflare Pages: **Deployments** → sull'ultimo, **Retry deployment**.
+- Cloudflare: **Deployments** → sull'ultimo, **Retry**.
 - Netlify: **Deploys** → **Trigger deploy** → **Clear cache and deploy site**.
 
 > Da qui in poi, ogni volta che il codice cambia su GitHub il sito si
@@ -172,7 +201,7 @@ sceglie chi è.
 ## Domande che verranno
 
 **Quanto costa?**
-Niente. Cloudflare Pages non misura il traffico di un sito statico, e Supabase
+Niente. Cloudflare non conta le richieste ai file statici, e Supabase
 gratis dà 500 MB di database e 1 GB di foto. L'app ricomprime ogni scatto a
 circa 300 KB, quindi 1 GB sono all'incirca **3.000 foto**. L'analisi completa,
 con quanto durano i limiti e quando converrebbe pagare, è in
