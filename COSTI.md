@@ -6,7 +6,8 @@ nel vostro caso concreto: due persone, qualche viaggio all'anno, foto.
 > **In breve:** l'app può restare gratuita per anni. L'unico limite che
 > incontrerete davvero è **1 GB di foto su Supabase**, e ci arriverete
 > intorno ai 3.000 scatti. Per pubblicare il sito conviene **Cloudflare Pages**
-> invece di Netlify: per un'app come questa è gratis senza limiti di traffico.
+> invece di Netlify: per un'app come questa è gratis senza limiti di traffico,
+> e non ha il tetto di pubblicazioni mensili che ha bloccato Netlify.
 
 ---
 
@@ -24,16 +25,35 @@ produzione, calcolo, banda, richieste web e inferenza AI.
 
 | | Piano gratuito Netlify |
 |---|---|
-| Crediti al mese | **300**, non si accumulano |
+| Crediti al mese | **300** dal 1º agosto 2026, non si accumulano |
 | Costo di un deploy di produzione | **15 crediti** |
-| Deploy al mese, quindi | **circa 20** |
+| Pubblicazioni al mese, quindi | **circa 20** |
 | In alternativa, in sola banda | circa 15 GB |
 | Quando finiscono | tetto rigido, si aspetta il ciclo successivo |
 
-Gli **operational credits** sono un fondo di riserva separato: servono solo a
-**tenere in piedi i siti già pubblicati** e non si possono spendere per i
-deploy. È esattamente quello che dice il messaggio: il sito vive, gli
-aggiornamenti no.
+Attenzione a una confusione facile: **i crediti non si pagano per ogni sito,
+si pagano per ogni pubblicazione.** Il numero di siti non c'entra. Venti
+pubblicazioni sono venti volte che premi "aggiorna il sito", che sia sempre
+lo stesso sito o venti siti diversi.
+
+### Stare online costa crediti?
+
+Quasi niente, ma non esattamente zero. I crediti si spendono su cinque voci:
+pubblicazioni, calcolo, **banda**, **richieste web** e inferenza AI. Un sito
+fermo, che nessuno apre, non consuma nulla; un sito visitato consuma in
+proporzione a quanto traffico genera.
+
+Nel vostro caso il traffico è trascurabile: l'app pesa circa 450 KB e viene
+messa in cache dal service worker, le foto non passano nemmeno da qui (stanno
+su Supabase). Due persone che la aprono ogni giorno fanno **pochi MB al mese**,
+contro i ~15 GB che i 300 crediti coprirebbero. In pratica: quasi tutto il
+consumo viene dalle pubblicazioni, non dai visitatori.
+
+Gli **operational credits** sono un fondo di riserva separato, che Netlify
+tiene proprio per coprire questo: servono a **mantenere online i siti già
+pubblicati** quando il saldo principale è finito, e non si possono spendere
+per le pubblicazioni. È esattamente quello che dice il messaggio: il sito
+vive, gli aggiornamenti no.
 
 Quindi:
 
@@ -43,18 +63,29 @@ Quindi:
   Cloudflare Pages (vedi sotto), che per questo tipo di app non ha questo
   problema.
 
-### Un dubbio legittimo: hai davvero consumato 300 crediti?
+### Se vedi 30 crediti invece di 300
 
-Venti deploy in un mese si fanno in fretta se hai collegato il deploy
-automatico e hai fatto molte modifiche. Ma da luglio 2026 **molti utenti del
-piano gratuito segnalano lo stesso banner con i crediti ancora interi** — sul
-forum di Netlify ci sono decine di discussioni intitolate "stuck on operational
-credits ... despite 30/30 credits available".
+Il piano gratuito dovrebbe accreditarne **300 al mese**. Diversi utenti — e a
+settembre 2026 è il caso anche di questo account — vedono invece **30**, con
+un triangolino di avviso accanto, e le pubblicazioni bloccate.
 
-Vale la pena controllare: **Team → Usage & Billing**. Se i crediti risultano
-ancora disponibili, non è un tuo consumo ed è il caso di aprire una richiesta
-sul forum di supporto chiedendo di sbloccare il flag. Se invece risultano
-consumati, è semplicemente il tetto del piano gratuito.
+Sul forum di Netlify ci sono decine di discussioni con lo stesso identico
+quadro, che risalgono a luglio 2026: *"Free plan stuck on operational credits
+— production deploys paused with 30/30 credits available"*, *"Credits showing:
+30 credits available (Free plan)"*. Il saldo mostrato resta intero e i deploy
+restano bloccati lo stesso.
+
+**Non è un tuo consumo.** Le opzioni sono due:
+
+1. Aprire una discussione sul **forum di supporto Netlify** (è il canale per
+   il piano gratuito: non c'è assistenza via ticket) indicando il nome del
+   team e chiedendo di sbloccare il flag e ripristinare l'accredito corretto.
+2. Non aspettare e pubblicare su **Cloudflare Pages**, dove il problema non
+   si pone. È quello che consiglio: il lavoro è già pronto nel repository.
+
+Se invece i crediti risultassero effettivamente consumati, allora è
+semplicemente il tetto del piano gratuito e basta aspettare il ciclo
+successivo — nel tuo caso il **29 settembre**.
 
 ---
 
