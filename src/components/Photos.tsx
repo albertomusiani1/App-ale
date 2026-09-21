@@ -26,7 +26,7 @@ export function PhotoGrid({
   coverId?: string | null
   onSetCover?: (photoId: string | null) => void
 }) {
-  const { data, addPhoto, deletePhoto } = useApp()
+  const { data, addPhoto, deletePhoto, t } = useApp()
   const c = colorOf(color)
   const inputRef = useRef<HTMLInputElement>(null)
   const [busy, setBusy] = useState(0)
@@ -90,7 +90,7 @@ export function PhotoGrid({
           <span className="text-3xl" aria-hidden>
             📷
           </span>
-          <span className="text-sm font-semibold">Carica le foto dal telefono</span>
+          <span className="text-sm font-semibold">{t('empty.photos')}</span>
         </button>
       ) : (
         <div className="grid grid-cols-3 gap-2">

@@ -25,7 +25,7 @@ import type { CalEvent } from '../types'
  * per categoria su ogni giorno, e sotto il dettaglio del giorno scelto.
  */
 export function CalendarPage() {
-  const { data } = useApp()
+  const { data, t } = useApp()
   const navigate = useNavigate()
   const [month, setMonth] = useState(() => new Date())
   const [selected, setSelected] = useState<string>(() => todayISO())
@@ -61,20 +61,22 @@ export function CalendarPage() {
       <div className="relative mb-4 overflow-hidden rounded-3xl bg-gradient-to-br from-cat-agenda to-[#C14C77] px-5 py-4 text-white shadow-lift">
         <Glitter count={14} seed={11} />
         <div className="relative">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] opacity-80">Noi due</p>
+          <p className="text-xs font-bold uppercase tracking-[0.2em] opacity-80">{t('home.eyebrow')}</p>
           <p className="font-display text-2xl font-bold leading-tight">
             {data.settings.nameA} &amp; {data.settings.nameB}
           </p>
           <p className="mt-1 text-sm opacity-90">
             {data.settings.anniversary ? (
               <>
-                {years > 0 && <>💗 {plural(years, 'anno', 'anni')} insieme · </>}
+                {years > 0 && <>{t('home.together', { anni: plural(years, 'anno', 'anni') })} · </>}
                 {toAnniversary === 0
-                  ? '🎉 Buon anniversario, oggi!'
-                  : `mancano ${plural(toAnniversary ?? 0, 'giorno', 'giorni')} al prossimo anniversario`}
+                  ? t('home.anniversaryToday')
+                  : t('home.countdown', {
+                      giorni: plural(toAnniversary ?? 0, 'giorno', 'giorni'),
+                    })}
               </>
             ) : (
-              <>Metti la vostra data nelle impostazioni ⚙️</>
+              <>{t('home.noDate')}</>
             )}
           </p>
         </div>
@@ -99,7 +101,7 @@ export function CalendarPage() {
             }}
             className="text-xs font-semibold text-cat-agenda"
           >
-            Vai a oggi
+            {t('home.today')}
           </button>
         </div>
         <button
@@ -183,9 +185,7 @@ export function CalendarPage() {
         </div>
 
         {selectedEntries.length === 0 ? (
-          <p className="card px-5 py-8 text-center text-sm text-muted">
-            Niente in programma. Un giorno tutto per voi 💗
-          </p>
+          <p className="card px-5 py-8 text-center text-sm text-muted">{t('home.emptyDay')}</p>
         ) : (
           <ul className="space-y-2">
             {selectedEntries.map((entry) => {
@@ -206,11 +206,11 @@ export function CalendarPage() {
                         {entry.time && <>{entry.time} · </>}
                         {entry.subtitle ||
                           (entry.isStart && !entry.isEnd
-                            ? 'Si comincia'
+                            ? t('home.starts')
                             : entry.isEnd && !entry.isStart
-                              ? 'Ultimo giorno'
+                              ? t('home.ends')
                               : !entry.isStart
-                                ? 'In corso'
+                                ? t('home.ongoing')
                                 : '')}
                       </span>
                     </span>

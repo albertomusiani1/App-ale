@@ -1,5 +1,5 @@
 -- ============================================================================
---  Noi Due · struttura del database
+--  LoviDovi · struttura del database
 --  Da incollare in Supabase → SQL Editor → New query → Run.
 --  Si può rieseguire senza danni: tutto è "create if not exists".
 -- ============================================================================
@@ -29,6 +29,8 @@ create table if not exists public.items (
   rating_b       smallint,
   meta           jsonb not null default '{}'::jsonb,
   cover_photo_id text,
+  lat            double precision,
+  lng            double precision,
   created_at     timestamptz not null default now()
 );
 create index if not exists items_category_idx on public.items(category_id);
@@ -41,7 +43,9 @@ create table if not exists public.stops (
   name     text not null default '',
   days     smallint not null default 1,
   notes    text not null default '',
-  position smallint not null default 0
+  position smallint not null default 0,
+  lat      double precision,
+  lng      double precision
 );
 create index if not exists stops_item_idx on public.stops(item_id);
 
@@ -117,8 +121,22 @@ create table if not exists public.settings (
   anniversary      date,
   saying_frequency smallint not null default 20,
   reduced_motion   boolean not null default false,
+  app_name         text not null default 'LoviDovi',
+  texts            jsonb not null default '{}'::jsonb,
   constraint settings_single_row check (id = 1)
 );
+
+-- ------------------------------------------------------- aggiornamenti --
+-- Queste righe servono a chi ha già creato il database con una versione
+-- precedente: aggiungono le colonne nuove senza toccare i dati esistenti.
+-- Su un database appena creato non fanno nulla, ed è giusto così.
+
+alter table public.items    add column if not exists lat double precision;
+alter table public.items    add column if not exists lng double precision;
+alter table public.stops    add column if not exists lat double precision;
+alter table public.stops    add column if not exists lng double precision;
+alter table public.settings add column if not exists app_name text not null default 'LoviDovi';
+alter table public.settings add column if not exists texts jsonb not null default '{}'::jsonb;
 
 -- --------------------------------------------------------------- sicurezza --
 -- Row Level Security: senza login non si legge e non si scrive niente.

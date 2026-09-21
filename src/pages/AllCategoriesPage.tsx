@@ -13,7 +13,7 @@ import { Glitter } from '../components/Magic'
  * È qui che la barra in basso "scarica" tutto quello che non ci sta.
  */
 export function AllCategoriesPage() {
-  const { data } = useApp()
+  const { data, t } = useApp()
   const [creating, setCreating] = useState(false)
 
   const categories = [...data.categories].sort((a, b) => a.sort - b.sort)
@@ -22,8 +22,8 @@ export function AllCategoriesPage() {
     <div className="pb-4">
       <PageTitle
         emoji="🗂️"
-        title="Tutte le categorie"
-        subtitle="Tutto quello che collezioniamo"
+        title={t('nav.all')}
+        subtitle={t('nav.allSubtitle')}
         color="custom"
         action={
           <Link
@@ -88,7 +88,15 @@ export function AllCategoriesPage() {
         </li>
       </ul>
 
-      <Link to="/impostazioni" className="btn-ghost mt-5 w-full">
+      <Link
+        to="/mappa"
+        className="btn mt-5 w-full text-white shadow-lift"
+        style={{ background: colorOf('trips').hex }}
+      >
+        🌍 {t('nav.world')}
+      </Link>
+
+      <Link to="/impostazioni" className="btn-ghost mt-2 w-full">
         ⚙️ Impostazioni, modi di dire e frasi
       </Link>
 

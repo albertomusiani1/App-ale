@@ -8,13 +8,15 @@ import { plural, rangeLabel } from '../lib/dates'
 import { ItemSheet } from '../components/ItemSheet'
 import { StopSheet } from '../components/StopSheet'
 import { PhotoGrid } from '../components/Photos'
+import { GeoMap } from '../components/GeoMap'
+import { distanceKm } from '../lib/geo'
 import { Empty, Hearts, StatusPill } from '../components/ui'
 import type { Stop, StopDay } from '../types'
 
 /** La scheda completa di un viaggio, un posto, un'uscita o un film. */
 export function ItemDetailPage() {
   const { categoryId = '', itemId = '' } = useParams()
-  const { data, saveItem } = useApp()
+  const { data, saveItem, t } = useApp()
   const navigate = useNavigate()
   const [editing, setEditing] = useState(false)
   const [stopSheet, setStopSheet] = useState<{ stop: Stop | null } | null>(null)
@@ -35,6 +37,29 @@ export function ItemDetailPage() {
   const c = colorOf(category.color)
   const cover = item.coverPhotoId ? data.photos.find((p) => p.id === item.coverPhotoId) : undefined
   const totalDays = stops.reduce((sum, s) => sum + s.days, 0)
+  const isTrip = category.kind === 'trips'
+
+  // In un viaggio la mappa mostra le tappe in ordine; altrove il posto stesso.
+  const located = stops.filter((s) => s.lat !== null && s.lng !== null)
+  const mapPoints = isTrip
+    ? located.map((s, i) => ({
+        id: s.id,
+        lat: s.lat!,
+        lng: s.lng!,
+        label: s.name,
+        color: c.hex,
+        badge: String(i + 1),
+      }))
+    : item.lat !== null && item.lng !== null
+      ? [{ id: item.id, lat: item.lat, lng: item.lng, label: item.title, color: c.hex, badge: category.emoji }]
+      : []
+
+  // Somma delle distanze fra tappe consecutive: dà l'idea di quanto si gira.
+  const totalKm = located.reduce(
+    (sum, s, i) =>
+      i === 0 ? 0 : sum + distanceKm([located[i - 1].lat!, located[i - 1].lng!], [s.lat!, s.lng!]),
+    0,
+  )
 
   return (
     <div className="pb-6">
@@ -90,6 +115,17 @@ export function ItemDetailPage() {
         </div>
       </header>
 
+      {mapPoints.length > 0 && (
+        <section className="mt-4">
+          <GeoMap height={240} route={isTrip} points={mapPoints} />
+          {isTrip && totalKm > 0 && (
+            <p className="mt-2 text-center text-xs text-muted">
+              🧭 Circa {Math.round(totalKm)} km fra la prima e l ultima tappa, in linea d aria.
+            </p>
+          )}
+        </section>
+      )}
+
       {item.notes && (
         <section className="card mt-4 p-5">
           <h2 className="label">{copy.notesLabel}</h2>
@@ -112,9 +148,7 @@ export function ItemDetailPage() {
           </div>
 
           {stops.length === 0 ? (
-            <p className="card px-5 py-8 text-center text-sm text-muted">
-              Nessuna tappa. Aggiungi la prima città e i giorni che ci passate.
-            </p>
+            <p className="card px-5 py-8 text-center text-sm text-muted">{t('empty.stops')}</p>
           ) : (
             <ol className="space-y-3">
               {stops.map((stop, i) => (

@@ -102,6 +102,8 @@ const mappers: { [K in TableName]: { to: (v: Dataset[K][number]) => AnyRow; from
       rating_b: i.ratingB,
       meta: i.meta,
       cover_photo_id: i.coverPhotoId,
+      lat: i.lat,
+      lng: i.lng,
       created_at: i.createdAt,
     }),
     from: (r) => ({
@@ -117,11 +119,22 @@ const mappers: { [K in TableName]: { to: (v: Dataset[K][number]) => AnyRow; from
       ratingB: (r.rating_b as number) ?? null,
       meta: (r.meta as Record<string, string>) ?? {},
       coverPhotoId: (r.cover_photo_id as string) ?? null,
+      lat: (r.lat as number) ?? null,
+      lng: (r.lng as number) ?? null,
       createdAt: (r.created_at as string) ?? new Date().toISOString(),
     }),
   },
   stops: {
-    to: (s) => ({ id: s.id, item_id: s.itemId, name: s.name, days: s.days, notes: s.notes, position: s.position }),
+    to: (s) => ({
+      id: s.id,
+      item_id: s.itemId,
+      name: s.name,
+      days: s.days,
+      notes: s.notes,
+      position: s.position,
+      lat: s.lat,
+      lng: s.lng,
+    }),
     from: (r) => ({
       id: r.id as string,
       itemId: r.item_id as string,
@@ -129,6 +142,8 @@ const mappers: { [K in TableName]: { to: (v: Dataset[K][number]) => AnyRow; from
       days: Number(r.days ?? 1),
       notes: (r.notes as string) ?? '',
       position: Number(r.position ?? 0),
+      lat: (r.lat as number) ?? null,
+      lng: (r.lng as number) ?? null,
     }),
   },
   stopDays: {
@@ -216,6 +231,8 @@ const mappers: { [K in TableName]: { to: (v: Dataset[K][number]) => AnyRow; from
 
 const settingsTo = (s: Settings): AnyRow => ({
   id: 1,
+  app_name: s.appName,
+  texts: s.texts,
   name_a: s.nameA,
   name_b: s.nameB,
   anniversary: s.anniversary,
@@ -224,6 +241,8 @@ const settingsTo = (s: Settings): AnyRow => ({
 })
 
 const settingsFrom = (r: AnyRow): Settings => ({
+  appName: (r.app_name as string) || DEFAULT_SETTINGS.appName,
+  texts: (r.texts as Record<string, string>) ?? {},
   nameA: (r.name_a as string) ?? DEFAULT_SETTINGS.nameA,
   nameB: (r.name_b as string) ?? DEFAULT_SETTINGS.nameB,
   anniversary: (r.anniversary as string) ?? null,

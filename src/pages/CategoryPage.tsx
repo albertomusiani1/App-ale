@@ -7,6 +7,8 @@ import { copyFor } from '../lib/kinds'
 import { shortDate } from '../lib/dates'
 import { ItemSheet } from '../components/ItemSheet'
 import { CategorySheet } from '../components/CategorySheet'
+import { ImportSheet } from '../components/ImportSheet'
+import { GeoMap } from '../components/GeoMap'
 import { Empty, Hearts, PageTitle } from '../components/ui'
 import { AchievementsPage } from './AchievementsPage'
 import type { Item, ItemStatus } from '../types'
@@ -16,12 +18,14 @@ type Tab = 'wish' | 'done'
 /** La lista di una categoria: "da fare" e "fatti", con ricerca e schede. */
 export function CategoryPage() {
   const { categoryId = '' } = useParams()
-  const { data } = useApp()
+  const { data, t } = useApp()
   const navigate = useNavigate()
   const [tab, setTab] = useState<Tab>('wish')
   const [query, setQuery] = useState('')
   const [creating, setCreating] = useState(false)
+  const [importing, setImporting] = useState(false)
   const [editingCategory, setEditingCategory] = useState(false)
+  const [view, setView] = useState<'list' | 'map'>('list')
 
   const category = data.categories.find((c) => c.id === categoryId)
 
@@ -46,6 +50,7 @@ export function CategoryPage() {
 
   const copy = copyFor(category.kind)
   const c = colorOf(category.color)
+  const onMap = items.filter((i) => i.lat !== null && i.lng !== null)
   const counts = {
     wish: data.items.filter((i) => i.categoryId === category.id && i.status !== 'done').length,
     done: data.items.filter((i) => i.categoryId === category.id && i.status === 'done').length,
@@ -93,7 +98,22 @@ export function CategoryPage() {
         ))}
       </div>
 
-      {counts.wish + counts.done > 6 && (
+      {onMap.length > 0 && (
+        <div className="mb-3 flex justify-center gap-1 rounded-full bg-white p-1 shadow-soft">
+          {(['list', 'map'] as const).map((v) => (
+            <button
+              key={v}
+              onClick={() => setView(v)}
+              className="flex-1 rounded-full px-4 py-2 text-sm font-semibold transition"
+              style={view === v ? { background: c.soft, color: c.ink } : { color: '#7A6A72' }}
+            >
+              {v === 'list' ? '☰ Lista' : '🗺️ Mappa'}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {view === 'list' && counts.wish + counts.done > 6 && (
         <input
           className="field mb-3"
           type="search"
@@ -106,9 +126,27 @@ export function CategoryPage() {
       {items.length === 0 ? (
         <Empty
           emoji={category.emoji}
-          title={query ? 'Nessun risultato' : `Ancora nessun ${copy.one}`}
-          hint={query ? 'Prova con un altra parola.' : `Tocca il pulsante qui sotto per aggiungerne uno.`}
+          title={query ? t('empty.search') : t('empty.item', { cosa: copy.one })}
+          hint={query ? t('empty.searchHint') : t('empty.itemHint')}
         />
+      ) : view === 'map' ? (
+        <div className="space-y-3">
+          <GeoMap
+            height={420}
+            points={onMap.map((i) => ({
+              id: i.id,
+              lat: i.lat!,
+              lng: i.lng!,
+              label: i.title,
+              color: c.hex,
+              badge: category.emoji,
+              onClick: () => navigate(`/c/${category.id}/${i.id}`),
+            }))}
+          />
+          <p className="text-center text-xs text-muted">
+            {onMap.length} di {items.length} su questa mappa. Gli altri non hanno ancora una posizione.
+          </p>
+        </div>
       ) : (
         <ul className="space-y-2.5">
           {items.map((item) => (
@@ -127,6 +165,10 @@ export function CategoryPage() {
         ＋ Aggiungi un {copy.one}
       </button>
 
+      <button onClick={() => setImporting(true)} className="btn-ghost mt-2 w-full">
+        🗺️ Importa da Wanderlog
+      </button>
+
       <ItemSheet
         open={creating}
         onClose={() => setCreating(false)}
@@ -137,6 +179,12 @@ export function CategoryPage() {
         open={editingCategory}
         onClose={() => setEditingCategory(false)}
         category={category}
+      />
+      <ImportSheet
+        open={importing}
+        onClose={() => setImporting(false)}
+        category={category}
+        onDone={(itemId) => navigate(`/c/${category.id}/${itemId}`)}
       />
     </div>
   )

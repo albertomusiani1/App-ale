@@ -1,4 +1,4 @@
-# Mettere Noi Due online — guida passo passo
+# Mettere LoviDovi online — guida passo passo
 
 Serve una mezz'ora, una volta sola. Non serve saper programmare: sono tutti
 copia-incolla. Alla fine avrai un indirizzo tipo `noidue.netlify.app` che tu e
@@ -130,7 +130,7 @@ in modalità locale e i dati non si sincronizzano fra i due telefoni.
 > configured. Please update the Vite version to at least "6.0.0"`
 
 Significa che Cloudflare sta cercando di configurare da solo il suo plugin per
-Vite. A noi non serve: Noi Due è un sito statico e non esegue niente sui
+Vite. A noi non serve: LoviDovi è un sito statico e non esegue niente sui
 server di Cloudflare. Il file **`wrangler.jsonc`** nella radice del repository
 gli dice di pubblicare e basta la cartella `dist`, e l'errore sparisce.
 
@@ -188,6 +188,27 @@ modificate serve una nuova pubblicazione.
 
 > Da qui in poi, ogni volta che il codice cambia su GitHub il sito si
 > ripubblica da solo. Non devi rifare niente.
+
+---
+
+## Parte 2-bis · Quando arrivano funzioni nuove
+
+Ogni tanto una funzione nuova ha bisogno di una colonna in più nel database.
+Succede raramente, ma quando succede va fatto a mano, una volta sola.
+
+**È il caso di adesso**, per mappe, nome e frasi personalizzabili:
+
+1. Supabase → **SQL Editor** → **New query**
+2. Incolla di nuovo tutto [`supabase/schema.sql`](supabase/schema.sql) — quello
+   aggiornato, non quello di prima
+3. **Run**
+
+Lo script è fatto per essere rieseguito: non tocca niente di quello che avete
+già scritto, aggiunge solo le colonne che mancano.
+
+> Se salti questo passaggio l'app si apre lo stesso, ma appena provi a salvare
+> una posizione sulla mappa o a riscrivere una frase compare un errore rosso in
+> cima allo schermo.
 
 ---
 

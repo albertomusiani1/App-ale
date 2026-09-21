@@ -9,7 +9,7 @@ import { Confetti, FloatingHearts, Glitter } from './Magic'
  * se ne avete caricata una, una foto dalla galleria delle impostazioni.
  */
 export function CelebrationOverlay() {
-  const { celebration, dismissCelebration, data } = useApp()
+  const { celebration, dismissCelebration, data, t } = useApp()
   const reduced = data.settings.reducedMotion
   const c = celebration ? colorOf(celebration.color) : colorOf('goals')
 
@@ -59,7 +59,7 @@ export function CelebrationOverlay() {
               )}
 
               <p className="mb-1 text-xs font-bold uppercase tracking-[0.2em]" style={{ color: c.hex }}>
-                Traguardo sbloccato
+                {t('celebration.eyebrow')}
               </p>
               <h2 className="font-display text-3xl font-bold leading-tight shimmer-text">
                 {celebration.title}
@@ -78,7 +78,7 @@ export function CelebrationOverlay() {
               )}
 
               <button onClick={dismissCelebration} className="btn-primary mt-6 w-full">
-                💗 Evviva noi
+                {t('celebration.button')}
               </button>
             </div>
           </motion.div>

@@ -10,6 +10,8 @@ import {
 } from 'react'
 import { backend, emptyDataset, type Dataset, type TableName } from '../lib/db'
 import { newlyUnlocked } from '../lib/achievements'
+import { makeTranslate, type Translate } from '../lib/copy'
+import { rememberBrand } from '../lib/brand'
 import { randomId } from '../lib/image'
 import {
   CAT,
@@ -49,6 +51,8 @@ interface AppValue {
   loading: boolean
   error: string | null
   mode: 'cloud' | 'local'
+  /** Legge una frase, tenendo conto di quelle riscritte da voi. */
+  t: Translate
 
   // scritture
   saveItem: (item: Item) => Promise<void>
@@ -348,6 +352,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   /* ---------------- celebrazioni automatiche ---------------- */
 
+  /** Cambia solo quando riscrivete una frase, non a ogni render. */
+  const t = useMemo(() => makeTranslate(data.settings.texts), [data.settings.texts])
+
+  // La schermata di accesso non può leggere il database: le lasciamo qui
+  // il nome e le sue tre frasi, così la prossima volta le trova già pronte.
+  useEffect(() => {
+    if (loading) return
+    rememberBrand({
+      appName: data.settings.appName,
+      tagline: t('login.tagline'),
+      password: t('login.password'),
+      enter: t('login.enter'),
+    })
+  }, [loading, data.settings.appName, t])
+
   const celebrate = useCallback((c: Celebration) => setCelebration(c), [])
   const dismissCelebration = useCallback(() => setCelebration(null), [])
 
@@ -380,6 +399,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       loading,
       error,
       mode: backend.mode,
+      t,
       saveItem,
       deleteItem,
       saveStop,
@@ -404,7 +424,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       refresh: load,
     }),
     [
-      data, loading, error, saveItem, deleteItem, saveStop, deleteStop, saveStopDay,
+      data, loading, error, t, saveItem, deleteItem, saveStop, deleteStop, saveStopDay,
       saveEvent, deleteEvent, saveCategory, deleteCategory, saveAchievement, deleteAchievement,
       saveSaying, deleteSaying, saveQuote, deleteQuote, updateSettings, addPhoto, deletePhoto,
       celebration, celebrate, dismissCelebration, load,

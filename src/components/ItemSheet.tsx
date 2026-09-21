@@ -5,6 +5,7 @@ import { copyFor } from '../lib/kinds'
 import { colorOf } from '../lib/colors'
 import type { Category, Item } from '../types'
 import { Sheet, ConfirmButton } from './Sheet'
+import { PlacePicker } from './PlacePicker'
 import { Field, FieldGroup, Hearts, Input, StatusPicker, TextArea } from './ui'
 
 const blankItem = (categoryId: string): Item => ({
@@ -20,6 +21,8 @@ const blankItem = (categoryId: string): Item => ({
   ratingB: null,
   meta: {},
   coverPhotoId: null,
+  lat: null,
+  lng: null,
   createdAt: new Date().toISOString(),
 })
 
@@ -107,6 +110,23 @@ export function ItemSheet({
           />
         </Field>
       )}
+
+      <PlacePicker
+        lat={draft.lat}
+        lng={draft.lng}
+        color={category.color}
+        hint={`Con una posizione, questo ${copy.one} compare sulla mappa.`}
+        onChange={(lat, lng, name) =>
+          setDraft((d) => ({
+            // Il nome trovato dalla ricerca riempie il titolo solo se è ancora vuoto:
+            // non deve sovrascrivere quello che avete scritto voi.
+            ...d,
+            lat,
+            lng,
+            title: d.title.trim() ? d.title : (name ?? d.title),
+          }))
+        }
+      />
 
       {copy.types && (
         <FieldGroup label={copy.typeLabel ?? 'Tipo'}>

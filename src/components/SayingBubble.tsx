@@ -7,7 +7,7 @@ import { useApp } from '../store/AppStore'
  * dimenticati. La frequenza si regola dalle Impostazioni (0 = mai).
  */
 export function SayingBubble() {
-  const { data } = useApp()
+  const { data, t } = useApp()
   const [index, setIndex] = useState<number | null>(null)
   const { sayings, settings } = data
 
@@ -48,7 +48,7 @@ export function SayingBubble() {
           style={{ bottom: 'calc(96px + var(--safe-bottom))' }}
         >
           <span className="mb-1 block text-[11px] font-bold uppercase tracking-widest text-cat-agenda">
-            🗯️ Come diciamo noi
+            {t('saying.eyebrow')}
           </span>
           <p className="font-display text-lg font-semibold leading-snug">"{saying.text}"</p>
           {saying.meaning && <p className="mt-1 text-sm text-muted">{saying.meaning}</p>}

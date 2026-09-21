@@ -1,4 +1,4 @@
-# 💗 Noi Due
+# 💗 LoviDovi
 
 Un'app di coppia: il calendario della vostra vita insieme, i viaggi con tappe e
 foto, i posti dove avete mangiato, le uscite, i film, i traguardi da sbloccare e
@@ -30,9 +30,29 @@ Quelli fatti e quelli che vorreste fare. Ogni viaggio ha:
 - meta, date, note e idee per quando lo organizzerete;
 - **tappe**: per ognuna scegli quanti giorni ci state, e l'app crea da sola una
   scheda per ogni giornata da riempire;
+- una **mappa** con le tappe numerate e collegate, e i chilometri fra la prima
+  e l'ultima;
 - foto caricate dal telefono, per il viaggio, per ogni tappa e anche per la
   singola giornata;
 - una foto di copertina a scelta.
+
+### 🗺️ Mappe, e import da Wanderlog
+Ogni posto può avere una posizione: la cerchi per nome o la scegli toccando la
+mappa. Da lì:
+- **mappa del viaggio**, con le tappe in ordine;
+- **mappa-mondo** (`🌍 La nostra mappa`) con tutto quello che avete segnato,
+  filtrabile per categoria e per fatti / da fare;
+- **vista a mappa** anche nelle liste, per vedere cosa c'è vicino.
+
+Se usate già **Wanderlog**, non si ricomincia da capo: esportate il viaggio in
+**KML, KMZ, GPX o CSV** e lo caricate nell'app. In una categoria viaggi diventa
+un viaggio con le sue tappe; altrove diventa una scheda per ogni posto.
+Funziona anche con gli export di Google My Maps, che usano gli stessi formati.
+
+### 💬 Le vostre parole
+Il nome dell'app e una quarantina di frasi — le celebrazioni, i messaggi delle
+liste vuote, i titoli — si riscrivono dalle Impostazioni, senza toccare il
+codice e senza ripubblicare niente. Svuoti un campo e torna com'era.
 
 ### 🍝 Ristoranti & Bar
 Posti provati e posti da provare, con il tipo di locale, l'indirizzo, le note
@@ -89,11 +109,17 @@ sei pixel del calendario:
 - **Tailwind CSS** per lo stile, **Framer Motion** per le animazioni.
 - **Supabase** per dati, autenticazione e foto — con una modalità locale di
   riserva che permette di usare l'app anche senza cloud configurato.
+- **Leaflet** per le mappe, su sfondi CARTO/OpenStreetMap: niente chiavi da
+  gestire, e la libreria si scarica solo quando una mappa compare davvero.
+- **Nominatim** (OpenStreetMap) per cercare i posti per nome.
 
 ```
 src/
 ├── lib/          modello dati, colori, date, calendario, achievement
-│   └── db.ts     il layer di persistenza: cloud Supabase o locale
+│   ├── db.ts     il layer di persistenza: cloud Supabase o locale
+│   ├── copy.ts   le frasi riscrivibili dalle Impostazioni
+│   ├── geo.ts    ricerca dei posti e distanze
+│   └── wanderlog.ts  lettura di KML, KMZ, GPX e CSV
 ├── store/        stato dell'app (AppStore) e accesso (AuthContext)
 ├── components/   pannelli, form, foto, animazioni, pop-up
 └── pages/        calendario, categorie, dettaglio, achievement, impostazioni

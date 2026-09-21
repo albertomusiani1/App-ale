@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useApp } from '../store/AppStore'
 import { useAuth } from '../store/AuthContext'
@@ -7,12 +7,13 @@ import { colorOf } from '../lib/colors'
 import { plural, yearsSince } from '../lib/dates'
 import { PhotoGrid } from '../components/Photos'
 import { Sheet } from '../components/Sheet'
+import { COPY_FIELDS, COPY_GROUPS, DEFAULT_COPY } from '../lib/copy'
 import { Field, FieldGroup, Input, PageTitle, TextArea } from '../components/ui'
 import type { Quote, Saying } from '../types'
 
 /** Impostazioni: i vostri dati, i modi di dire, le frasi e le foto dei pop-up. */
 export function SettingsPage() {
-  const { data, updateSettings, mode } = useApp()
+  const { data, updateSettings, mode, t } = useApp()
   const { me, setMe, signOut } = useAuth()
   const { settings } = data
   const years = yearsSince(settings.anniversary)
@@ -21,8 +22,8 @@ export function SettingsPage() {
     <div className="space-y-5 pb-6">
       <PageTitle
         emoji="⚙️"
-        title="Impostazioni"
-        subtitle="Le cose che rendono questa app vostra"
+        title={t('settings.title')}
+        subtitle={t('settings.subtitle')}
         color="agenda"
         action={
           <Link
@@ -37,7 +38,19 @@ export function SettingsPage() {
 
       {/* --- Noi due --- */}
       <section className="card space-y-4 p-5">
-        <h2 className="font-display text-xl font-bold">Noi due</h2>
+        <h2 className="font-display text-xl font-bold">{t('settings.us')}</h2>
+
+        <Field
+          label="Come si chiama la nostra app"
+          hint="Compare nella schermata di accesso. Il nome sotto l icona sulla home del telefono si cambia solo ripubblicando."
+        >
+          <Input
+            value={settings.appName}
+            placeholder="LoviDovi"
+            onChange={(e) => void updateSettings({ appName: e.target.value })}
+          />
+        </Field>
+
         <div className="grid grid-cols-2 gap-3">
           <Field label="Nome 1">
             <Input value={settings.nameA} onChange={(e) => void updateSettings({ nameA: e.target.value })} />
@@ -85,15 +98,13 @@ export function SettingsPage() {
 
       <SayingsSection />
       <QuotesSection />
+      <WordsSection />
 
       {/* --- Galleria per i pop-up --- */}
       <section className="card space-y-3 p-5">
         <div>
-          <h2 className="font-display text-xl font-bold">Foto dei pop-up</h2>
-          <p className="text-sm text-muted">
-            Le foto che carichi qui compaiono a sorpresa nelle celebrazioni: Taylor Swift,
-            voi due, quello che vi va.
-          </p>
+          <h2 className="font-display text-xl font-bold">{t('settings.gallery')}</h2>
+          <p className="text-sm text-muted">{t('settings.galleryHint')}</p>
         </div>
         <PhotoGrid scope="taylor" refId="gallery" label="Galleria" />
       </section>
@@ -181,7 +192,7 @@ const blankSaying = (): Saying => ({
 
 /** I vostri modi di dire: quelli che ogni tanto ricompaiono da soli. */
 function SayingsSection() {
-  const { data, saveSaying, deleteSaying } = useApp()
+  const { data, saveSaying, deleteSaying, t } = useApp()
   const [editing, setEditing] = useState<Saying | null>(null)
   const [open, setOpen] = useState(false)
 
@@ -197,10 +208,8 @@ function SayingsSection() {
     <section className="card space-y-3 p-5">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="font-display text-xl font-bold">I nostri modi di dire</h2>
-          <p className="text-sm text-muted">
-            Così non ce li dimentichiamo: ogni tanto ricompaiono da soli sullo schermo.
-          </p>
+          <h2 className="font-display text-xl font-bold">{t('settings.sayings')}</h2>
+          <p className="text-sm text-muted">{t('settings.sayingsHint')}</p>
         </div>
         <button
           onClick={() => start(null)}
@@ -212,7 +221,7 @@ function SayingsSection() {
 
       {data.sayings.length === 0 ? (
         <p className="rounded-2xl bg-white px-4 py-6 text-center text-sm text-muted shadow-soft">
-          Nessun modo di dire. Aggiungi il primo 🗯️
+          {t('empty.sayings')}
         </p>
       ) : (
         <ul className="space-y-2">
@@ -316,7 +325,7 @@ const blankQuote = (): Quote => ({
 
 /** Le frasi che compaiono nei pop-up delle celebrazioni. */
 function QuotesSection() {
-  const { data, saveQuote, deleteQuote } = useApp()
+  const { data, saveQuote, deleteQuote, t } = useApp()
   const [editing, setEditing] = useState<Quote | null>(null)
   const [open, setOpen] = useState(false)
 
@@ -329,10 +338,8 @@ function QuotesSection() {
     <section className="card space-y-3 p-5">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="font-display text-xl font-bold">Frasi per i pop-up</h2>
-          <p className="text-sm text-muted">
-            Versi di Taylor Swift, battute vostre, dediche: escono quando sbloccate un traguardo.
-          </p>
+          <h2 className="font-display text-xl font-bold">{t('settings.quotes')}</h2>
+          <p className="text-sm text-muted">{t('settings.quotesHint')}</p>
         </div>
         <button
           onClick={() => start(null)}
@@ -420,5 +427,141 @@ function QuotesSection() {
         )}
       </Sheet>
     </section>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+
+/**
+ * Tutte le frasi "con personalità" dell'app, riscrivibili una per una.
+ *
+ * I gruppi sono chiusi di partenza: aperti tutti insieme sarebbero un muro di
+ * quaranta campi. Una frase lasciata vuota torna a quella di partenza, così
+ * non si può rompere l'app cancellando tutto.
+ */
+function WordsSection() {
+  const { data, updateSettings } = useApp()
+  const [openGroup, setOpenGroup] = useState<string | null>(null)
+  const texts = data.settings.texts
+
+  const changed = COPY_FIELDS.filter((f) => (texts[f.key] ?? '').trim()).length
+
+  const write = (key: string, value: string) => {
+    const next = { ...texts }
+    if (value.trim()) next[key] = value
+    else delete next[key]
+    void updateSettings({ texts: next })
+  }
+
+  return (
+    <section className="card space-y-3 p-5">
+      <div>
+        <h2 className="font-display text-xl font-bold">Le nostre parole</h2>
+        <p className="text-sm text-muted">
+          Ogni frase che l app vi dice, riscritta come la direste voi. Svuota un campo per
+          tornare a quella di partenza.
+        </p>
+        {changed > 0 && (
+          <p className="mt-1 text-xs font-semibold text-cat-agenda">
+            {changed} {changed === 1 ? 'frase riscritta' : 'frasi riscritte'}
+          </p>
+        )}
+      </div>
+
+      <div className="space-y-2">
+        {COPY_GROUPS.map((group) => {
+          const fields = COPY_FIELDS.filter((f) => f.group === group)
+          const isOpen = openGroup === group
+          const touched = fields.filter((f) => (texts[f.key] ?? '').trim()).length
+          return (
+            <div key={group} className="overflow-hidden rounded-2xl bg-white shadow-soft">
+              <button
+                onClick={() => setOpenGroup(isOpen ? null : group)}
+                className="flex w-full items-center gap-2 px-4 py-3 text-left"
+              >
+                <span className="flex-1 font-semibold">{group}</span>
+                <span className="text-xs text-muted">
+                  {touched > 0 ? `${touched}/${fields.length}` : fields.length}
+                </span>
+                <span aria-hidden className={isOpen ? 'rotate-180' : ''}>
+                  ⌄
+                </span>
+              </button>
+
+              {isOpen && (
+                <div className="space-y-3 border-t border-black/5 px-4 pb-4 pt-3">
+                  {fields.map((field) => (
+                    <WordField
+                      key={field.key}
+                      field={field}
+                      value={(texts[field.key] ?? '').trim()}
+                      onWrite={write}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
+    </section>
+  )
+}
+
+/**
+ * Una singola frase riscrivibile.
+ *
+ * Il "ripristina" è un pulsante accanto all'etichetta, quindi l'etichetta non
+ * può essere un <label> che li avvolge entrambi: si attaccherebbe al pulsante
+ * invece che al campo, e chi usa un lettore di schermo si sentirebbe leggere
+ * il nome sbagliato. Qui il collegamento è esplicito, con htmlFor.
+ */
+function WordField({
+  field,
+  value,
+  onWrite,
+}: {
+  field: (typeof COPY_FIELDS)[number]
+  value: string
+  onWrite: (key: string, value: string) => void
+}) {
+  const id = useId()
+  return (
+    <div>
+      <div className="mb-1 flex items-baseline justify-between gap-2">
+        <label htmlFor={id} className="text-sm font-semibold text-muted">
+          {field.label}
+        </label>
+        {value && (
+          <button
+            type="button"
+            onClick={() => onWrite(field.key, '')}
+            className="shrink-0 text-xs text-muted underline"
+          >
+            ripristina
+          </button>
+        )}
+      </div>
+      {field.long ? (
+        <TextArea
+          id={id}
+          value={value}
+          placeholder={DEFAULT_COPY[field.key]}
+          onChange={(e) => onWrite(field.key, e.target.value)}
+        />
+      ) : (
+        <Input
+          id={id}
+          value={value}
+          placeholder={DEFAULT_COPY[field.key]}
+          onChange={(e) => onWrite(field.key, e.target.value)}
+        />
+      )}
+      {field.slots && (
+        <p className="mt-1 text-xs text-muted">
+          Lascia {field.slots.join(' e ')} dove sono: l app ci mette dentro il valore giusto.
+        </p>
+      )}
+    </div>
   )
 }

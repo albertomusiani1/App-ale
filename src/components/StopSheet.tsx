@@ -4,6 +4,7 @@ import { randomId } from '../lib/image'
 import { colorOf } from '../lib/colors'
 import type { ColorKey, Stop } from '../types'
 import { ConfirmButton, Sheet } from './Sheet'
+import { PlacePicker } from './PlacePicker'
 import { Field, Input, TextArea } from './ui'
 
 const blankStop = (itemId: string, position: number): Stop => ({
@@ -13,6 +14,8 @@ const blankStop = (itemId: string, position: number): Stop => ({
   days: 2,
   notes: '',
   position,
+  lat: null,
+  lng: null,
 })
 
 /**
@@ -77,6 +80,16 @@ export function StopSheet({
           onChange={(e) => set('name', e.target.value)}
         />
       </Field>
+
+      <PlacePicker
+        lat={draft.lat}
+        lng={draft.lng}
+        color={color}
+        hint="Le tappe con una posizione vengono collegate dalla linea del viaggio."
+        onChange={(lat, lng, name) =>
+          setDraft((d) => ({ ...d, lat, lng, name: d.name.trim() ? d.name : (name ?? d.name) }))
+        }
+      />
 
       <Field label="Quanti giorni ci stiamo" hint="Per ogni giorno avrai una scheda da riempire.">
         <div className="flex items-center gap-3">

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useAuth } from '../store/AuthContext'
 import { isCloudConfigured } from '../lib/supabase'
+import { readBrand } from '../lib/brand'
 import { FloatingHearts, Glitter, PulsingHeart } from '../components/Magic'
 
 /**
@@ -11,6 +12,7 @@ import { FloatingHearts, Glitter, PulsingHeart } from '../components/Magic'
  */
 export function LoginPage() {
   const { signIn } = useAuth()
+  const brand = readBrand()
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -42,12 +44,12 @@ export function LoginPage() {
         <div className="mb-3 flex justify-center">
           <PulsingHeart size={72} />
         </div>
-        <h1 className="font-display text-4xl font-bold">Noi Due</h1>
-        <p className="mt-1 text-muted">Il diario della nostra storia</p>
+        <h1 className="font-display text-4xl font-bold">{brand.appName}</h1>
+        <p className="mt-1 text-muted">{brand.tagline}</p>
 
         <form onSubmit={submit} className="card mt-8 space-y-3 p-5 text-left">
           <label className="label" htmlFor="password">
-            {isCloudConfigured ? 'La nostra password' : 'Entra'}
+            {isCloudConfigured ? brand.password : 'Entra'}
           </label>
           {isCloudConfigured ? (
             <input
@@ -73,7 +75,7 @@ export function LoginPage() {
             disabled={busy || (isCloudConfigured && password.length === 0)}
             className="btn-primary w-full"
           >
-            {busy ? 'Un attimo...' : '💗 Entriamo'}
+            {busy ? 'Un attimo...' : brand.enter}
           </button>
         </form>
       </motion.div>

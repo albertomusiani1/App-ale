@@ -12,6 +12,7 @@ import { CalendarPage } from './pages/CalendarPage'
 import { CategoryPage } from './pages/CategoryPage'
 import { ItemDetailPage } from './pages/ItemDetailPage'
 import { AllCategoriesPage } from './pages/AllCategoriesPage'
+import { WorldMapPage } from './pages/WorldMapPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { LoginPage, WhoAreYou } from './pages/LoginPage'
 
@@ -78,6 +79,7 @@ function Shell() {
               <Route path="/c/:categoryId" element={<CategoryPage />} />
               <Route path="/c/:categoryId/:itemId" element={<ItemDetailPage />} />
               <Route path="/tutte" element={<AllCategoriesPage />} />
+              <Route path="/mappa" element={<WorldMapPage />} />
               <Route path="/impostazioni" element={<SettingsPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

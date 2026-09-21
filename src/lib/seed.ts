@@ -76,6 +76,8 @@ export const DEFAULT_QUOTES: Omit<Quote, 'id' | 'createdAt'>[] = [
 ]
 
 export const DEFAULT_SETTINGS: Settings = {
+  appName: 'LoviDovi',
+  texts: {},
   nameA: 'Lui',
   nameB: 'Lei',
   anniversary: null,

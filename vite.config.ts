@@ -9,8 +9,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'icon-192.png', 'icon-512.png'],
       manifest: {
-        name: 'Noi Due',
-        short_name: 'Noi Due',
+        name: 'LoviDovi',
+        short_name: 'LoviDovi',
         description: 'Il diario gamificato della nostra storia',
         theme_color: '#E8638C',
         background_color: '#FFF5F8',

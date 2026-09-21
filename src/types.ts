@@ -54,6 +54,9 @@ export interface Item {
   /** Campi extra specifici della categoria (es. kind: 'film' | 'serie'). */
   meta: Record<string, string>
   coverPhotoId: string | null
+  /** Coordinate del posto, se lo avete messo sulla mappa. */
+  lat: number | null
+  lng: number | null
   createdAt: string
 }
 
@@ -66,6 +69,9 @@ export interface Stop {
   days: number
   notes: string
   position: number
+  /** Dove si trova la tappa, per disegnarla sulla mappa del viaggio. */
+  lat: number | null
+  lng: number | null
 }
 
 /** Il singolo giorno di una tappa. */
@@ -144,6 +150,13 @@ export interface Quote {
 }
 
 export interface Settings {
+  /** Come si chiama l'app dentro l'app: lo decidete voi. */
+  appName: string
+  /**
+   * Le frasi riscritte da voi, per chiave (vedi lib/copy.ts).
+   * Quelle non presenti restano quelle di partenza.
+   */
+  texts: Record<string, string>
   nameA: string
   nameB: string
   /** Data di inizio relazione: alimenta gli achievement anniversario. */

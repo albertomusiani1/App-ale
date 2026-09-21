@@ -13,7 +13,7 @@ import { CategorySheet } from './CategorySheet'
  * compresa una categoria nuova di zecca.
  */
 export function AddSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const { data } = useApp()
+  const { data, t } = useApp()
   const [eventOpen, setEventOpen] = useState(false)
   const [newCategoryOpen, setNewCategoryOpen] = useState(false)
   const [target, setTarget] = useState<Category | null>(null)
@@ -22,7 +22,7 @@ export function AddSheet({ open, onClose }: { open: boolean; onClose: () => void
 
   return (
     <>
-      <Sheet open={open} onClose={onClose} title="Cosa aggiungiamo?">
+      <Sheet open={open} onClose={onClose} title={t('add.title')}>
         <button
           onClick={() => {
             onClose()
@@ -38,8 +38,8 @@ export function AddSheet({ open, onClose }: { open: boolean; onClose: () => void
             📅
           </span>
           <span className="min-w-0 flex-1">
-            <span className="block font-bold">Un impegno</span>
-            <span className="block text-sm text-muted">Una data sul calendario, senza categoria</span>
+            <span className="block font-bold">{t('add.event')}</span>
+            <span className="block text-sm text-muted">{t('add.eventHint')}</span>
           </span>
           <span className="text-muted" aria-hidden>
             ›

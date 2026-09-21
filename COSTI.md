@@ -1,4 +1,4 @@
-# Quanto costa Noi Due, davvero
+# Quanto costa LoviDovi, davvero
 
 Analisi dei piani gratuiti, di cosa succede quando si sfora e di quanto durano
 nel vostro caso concreto: due persone, qualche viaggio all'anno, foto.
@@ -91,7 +91,7 @@ successivo — nel tuo caso il **29 settembre**.
 
 ## 2 · Cloudflare: perché conviene per questa app
 
-Noi Due è un sito **completamente statico** che parla con Supabase: file HTML,
+LoviDovi è un sito **completamente statico** che parla con Supabase: file HTML,
 JavaScript e CSS, nessun codice che gira sul server dell'hosting. È
 esattamente lo scenario in cui Cloudflare è gratuito sul serio, perché **le
 richieste ai file statici non vengono né contate né fatturate**, su nessun
@@ -106,7 +106,7 @@ n'è.
 | Blocco a fine crediti | sì | non previsto |
 | Dominio personalizzato + HTTPS | sì | sì |
 
-Il build di Noi Due dura poco più di un minuto: i 3.000 minuti inclusi sono
+Il build di LoviDovi dura poco più di un minuto: i 3.000 minuti inclusi sono
 un tetto che non vedrete mai.
 
 > **Nota sul nome.** Cloudflare ha spostato anche i siti statici sotto

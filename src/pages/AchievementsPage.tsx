@@ -12,7 +12,7 @@ import type { Achievement, Category } from '../types'
 
 /** La bacheca dei traguardi: quelli sbloccati brillano, gli altri mostrano quanto manca. */
 export function AchievementsPage({ category }: { category: Category }) {
-  const { data, saveAchievement, celebrate } = useApp()
+  const { data, saveAchievement, celebrate, t } = useApp()
   const [editing, setEditing] = useState<Achievement | null>(null)
   const [creating, setCreating] = useState(false)
 
@@ -68,7 +68,7 @@ export function AchievementsPage({ category }: { category: Category }) {
             {unlocked}
           </p>
           <p className="text-sm font-semibold" style={{ color: c.ink }}>
-            {unlocked === 1 ? 'traguardo conquistato' : 'traguardi conquistati'} insieme
+            {unlocked === 1 ? t('achievements.counterOne') : t('achievements.counter')}
           </p>
           <div className="mx-auto mt-3 max-w-xs">
             <Progress
@@ -138,11 +138,9 @@ export function AchievementsPage({ category }: { category: Category }) {
         className="btn mt-5 w-full text-white shadow-lift"
         style={{ background: c.hex }}
       >
-        ＋ Inventane uno vostro
+        {t('achievements.create')}
       </button>
-      <p className="mt-2 text-center text-xs text-muted">
-        Tocca un traguardo da spuntare a mano per sbloccarlo. Doppio tocco per modificarlo.
-      </p>
+      <p className="mt-2 text-center text-xs text-muted">{t('achievements.hint')}</p>
 
       <AchievementSheet
         open={creating || Boolean(editing)}
