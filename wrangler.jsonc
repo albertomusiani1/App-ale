@@ -13,6 +13,11 @@
     "directory": "./dist",
     // Qualsiasi indirizzo che non corrisponde a un file serve index.html:
     // è quello che permette di aprire /tutte o /impostazioni direttamente.
+    //
+    // È l'unico posto in cui va dichiarato. La stessa cosa scritta come regola
+    // in un file _redirects (`/* /index.html 200`) viene rifiutata da
+    // Cloudflare in fase di pubblicazione: la considera un ciclo infinito,
+    // perché toglierebbe `.html` o `/index` e ricadrebbe su sé stessa.
     "not_found_handling": "single-page-application"
   }
 }

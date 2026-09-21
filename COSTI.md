@@ -114,9 +114,9 @@ un tetto che non vedrete mai.
 > un progetto nuovo. Cambia il percorso nel pannello, non la sostanza né i
 > costi. La procedura aggiornata è nel [SETUP.md](SETUP.md), *Opzione A*.
 
-Il repository contiene `wrangler.jsonc` (per Cloudflare) e `public/_redirects`
-(per Netlify e per la vecchia Pages): puoi tenere i due hosting in parallelo
-senza toccare il codice.
+Il repository contiene `wrangler.jsonc` (per Cloudflare) e `netlify.toml` (per
+Netlify), ognuno con il proprio modo di dichiarare il routing della single page
+app: puoi tenere i due hosting in parallelo senza toccare il codice.
 
 ---
 

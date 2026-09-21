@@ -122,6 +122,16 @@ Se lo vedi ancora, il branch che Cloudflare sta compilando non contiene quel
 file: aggiornalo all'ultima versione del codice e rilancia il build da
 **Deployments** → **Retry**.
 
+#### Se il build fallisce su `_redirects`
+
+> `Invalid _redirects configuration: Line 7: Infinite loop detected in this
+> rule.`
+
+Il progetto non ha più quel file: il routing della single page app lo dichiara
+`wrangler.jsonc`, e Cloudflare rifiuta la stessa regola scritta come
+`/* /index.html 200`. Se l'errore compare, stai compilando una versione
+vecchia del codice — aggiorna il branch e rilancia.
+
 ### Opzione B · Netlify
 
 1. Vai su **https://app.netlify.com** e accedi.

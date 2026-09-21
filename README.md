@@ -99,6 +99,9 @@ src/
 └── pages/        calendario, categorie, dettaglio, achievement, impostazioni
 supabase/
 └── schema.sql    tabelle, regole di sicurezza e storage: da incollare e basta
+
+wrangler.jsonc    come pubblicare su Cloudflare
+netlify.toml      come pubblicare su Netlify
 ```
 
 ### Un paio di scelte che vale la pena conoscere
