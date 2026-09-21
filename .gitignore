@@ -8,3 +8,6 @@ dist-ssr
 .netlify
 tsconfig.tsbuildinfo
 *.tsbuildinfo
+
+# Stato locale di wrangler dev, non va versionato
+.wrangler
