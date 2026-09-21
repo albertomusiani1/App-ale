@@ -7,8 +7,14 @@ lei aggiungete alla schermata home del telefono.
 Il giro è questo:
 
 ```
-GitHub (il codice)  →  Netlify (pubblica il sito)  →  Supabase (dati e foto)
+GitHub (il codice)  →  l'hosting (pubblica il sito)  →  Supabase (dati e foto)
 ```
+
+Per l'hosting ci sono due strade, entrambe gratuite. **Cloudflare Pages** è
+quella che consiglio: per un sito come questo non ha limiti di traffico né di
+pubblicazioni. **Netlify** funziona altrettanto bene, ma il piano gratuito
+concede circa 20 pubblicazioni al mese e poi si ferma fino al mese dopo.
+Il confronto con i numeri sta in [COSTI.md](COSTI.md).
 
 ---
 
@@ -62,26 +68,52 @@ Tieni aperta questa pagina, ti servono fra un minuto.
 
 ---
 
-## Parte 2 · Netlify (pubblicare l'app)
+## Parte 2 · Pubblicare l'app
 
-### 2.1 Collega il repository
+Scegli **una** delle due. Puoi anche tenerle tutte e due: il repository
+funziona su entrambe senza modifiche.
+
+### Opzione A · Cloudflare Pages — consigliata
+
+1. Vai su **https://dash.cloudflare.com** e registrati (gratis).
+2. Nel menù a sinistra: **Workers & Pages** → **Create** → scheda **Pages** →
+   **Connect to Git**.
+3. Autorizza GitHub e scegli il repository **App-ale**.
+4. Compila così:
+   - **Production branch**: il branch dove sta il codice
+     (`claude/couple-gamification-app-5p9slb`, oppure `main` se l'hai unito);
+   - **Framework preset**: `Vite`;
+   - **Build command**: `npm run build`;
+   - **Build output directory**: `dist`.
+5. Apri **Environment variables** e aggiungi le tre righe della tabella qui
+   sotto, **prima** di lanciare il build.
+6. **Save and Deploy**. Un paio di minuti e hai un indirizzo
+   `nome-progetto.pages.dev`.
+
+Per cambiare il nome: **Settings** → **General** → il progetto si può
+rinominare, oppure aggiungi un dominio tuo da **Custom domains**.
+
+### Opzione B · Netlify
 
 1. Vai su **https://app.netlify.com** e accedi.
 2. **Add new site** → **Import an existing project** → **GitHub**.
 3. Autorizza Netlify e scegli il repository **App-ale**.
-4. Nella schermata di configurazione, **branch to deploy**: scegli il branch su
-   cui sta il codice (`claude/couple-gamification-app-5p9slb`, oppure `main` se
-   lo hai già unito).
-5. Build command e publish directory dovrebbero già essere giusti — li legge da
-   `netlify.toml`:
-   - Build command: `npm run build`
-   - Publish directory: `dist`
+4. **Branch to deploy**: il branch dove sta il codice.
+5. Build command e publish directory li legge già da `netlify.toml`
+   (`npm run build` e `dist`).
+6. Aggiungi le tre variabili qui sotto e poi **Deploy site**.
 
-### 2.2 Metti le tre variabili
+Per un nome più carino: **Site configuration** → **Change site name**.
 
-**Prima di fare il deploy**, clicca su **Add environment variables** (o, se hai
-già pubblicato: **Site configuration** → **Environment variables**) e aggiungi
-queste tre, una per volta:
+> ⚠️ Se a un certo punto Netlify ti dice *"running on operational credits,
+> production deploys are paused"*, vuol dire che hai esaurito i 300 crediti
+> mensili del piano gratuito: il sito resta online ma non pubblica più
+> aggiornamenti fino al ciclo successivo. Spiegato per bene in
+> [COSTI.md](COSTI.md).
+
+### Le tre variabili d'ambiente
+
+Valgono per entrambi gli hosting, con gli stessi nomi:
 
 | Nome | Valore |
 |---|---|
@@ -91,21 +123,16 @@ queste tre, una per volta:
 
 I nomi vanno scritti **esattamente così**, maiuscole comprese.
 
-### 2.3 Pubblica
+### Se cambi le variabili dopo aver pubblicato
 
-1. **Deploy site**. Il primo build richiede un paio di minuti.
-2. Quando è verde, apri l'indirizzo che ti dà Netlify.
-3. Se vuoi un nome più carino: **Site configuration** → **Change site name** →
-   per esempio `noi-due-alberto`.
+Vengono lette **durante il build**, non quando apri il sito: dopo averle
+modificate serve una nuova pubblicazione.
 
-> Da qui in poi ogni volta che il codice cambia su GitHub, Netlify ripubblica da
-> solo. Non devi rifare niente.
+- Cloudflare Pages: **Deployments** → sull'ultimo, **Retry deployment**.
+- Netlify: **Deploys** → **Trigger deploy** → **Clear cache and deploy site**.
 
-### 2.4 Se hai cambiato le variabili dopo aver pubblicato
-
-Le variabili vengono lette **durante il build**, non quando apri il sito: dopo
-averle modificate devi rifare il deploy. **Deploys** → **Trigger deploy** →
-**Clear cache and deploy site**.
+> Da qui in poi, ogni volta che il codice cambia su GitHub il sito si
+> ripubblica da solo. Non devi rifare niente.
 
 ---
 
@@ -145,9 +172,11 @@ sceglie chi è.
 ## Domande che verranno
 
 **Quanto costa?**
-Niente. Netlify gratis copre 100 GB di traffico al mese, Supabase gratis dà
-500 MB di database e 1 GB di foto. Per due persone è tantissimo: l'app
-ricomprime ogni foto a circa 300 KB, quindi 1 GB sono all'incirca **3.000 foto**.
+Niente. Cloudflare Pages non misura il traffico di un sito statico, e Supabase
+gratis dà 500 MB di database e 1 GB di foto. L'app ricomprime ogni scatto a
+circa 300 KB, quindi 1 GB sono all'incirca **3.000 foto**. L'analisi completa,
+con quanto durano i limiti e quando converrebbe pagare, è in
+[COSTI.md](COSTI.md).
 
 **Un progetto Supabase gratuito si mette in pausa?**
 Sì, dopo una settimana senza nessun accesso. Basta riaprire l'app (o il pannello

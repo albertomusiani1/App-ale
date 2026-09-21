@@ -237,29 +237,90 @@ const settingsFrom = (r: AnyRow): Settings => ({
 
 /** Quanto resta valido un indirizzo firmato: una settimana. */
 const SIGNED_URL_TTL = 60 * 60 * 24 * 7
+/** Quando manca meno di un giorno alla scadenza lo rifirmiamo. */
+const RESIGN_WHEN_LEFT = 60 * 60 * 24
+const SIGNED_CACHE_KEY = 'noi-due:signed'
+
+interface SignedEntry {
+  url: string
+  /** Scadenza in secondi epoch. */
+  exp: number
+}
+
+/**
+ * Gli indirizzi firmati vengono ricordati fra un avvio e l'altro.
+ *
+ * Non è un dettaglio: firmare di nuovo ogni foto a ogni apertura cambia la
+ * query string, il browser non riconosce più l'immagine che ha già in cache
+ * e la riscarica. Riusando lo stesso indirizzo finché è valido, le foto
+ * viste ieri non ripassano dalla rete — che è ciò che tiene i consumi dentro
+ * i 5 GB al mese del piano gratuito di Supabase.
+ */
+function readSignedCache(): Record<string, SignedEntry> {
+  try {
+    const parsed: unknown = JSON.parse(localStorage.getItem(SIGNED_CACHE_KEY) ?? '{}')
+    // Un valore rimasto lì da una versione precedente non deve far esplodere l'avvio.
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {}
+    return parsed as Record<string, SignedEntry>
+  } catch {
+    return {}
+  }
+}
+
+function writeSignedCache(cache: Record<string, SignedEntry>) {
+  try {
+    localStorage.setItem(SIGNED_CACHE_KEY, JSON.stringify(cache))
+  } catch {
+    // Spazio esaurito o navigazione privata: pazienza, si rifirma ogni volta.
+  }
+}
+
+function rememberSigned(path: string, url: string) {
+  const cache = readSignedCache()
+  cache[path] = { url, exp: Math.floor(Date.now() / 1000) + SIGNED_URL_TTL }
+  writeSignedCache(cache)
+}
 
 /**
  * Il bucket delle foto è privato: senza login nessuno le vede, nemmeno
- * conoscendo l'indirizzo. In cambio gli indirizzi vanno firmati a ogni
- * avvio, in blocchi per non fare centinaia di chiamate.
+ * conoscendo l'indirizzo. Qui firmiamo solo le foto che non hanno già un
+ * indirizzo valido in cache, in blocchi per non fare centinaia di chiamate.
  */
 async function signPhotos(client: NonNullable<typeof supabase>, photos: Photo[]): Promise<Photo[]> {
   const withPath = photos.filter((p) => p.path)
   if (withPath.length === 0) return photos
-  const signedByPath = new Map<string, string>()
+
+  const cache = readSignedCache()
+  const now = Math.floor(Date.now() / 1000)
+  const isFresh = (path: string) => {
+    const entry = cache[path]
+    return Boolean(entry && entry.exp - now > RESIGN_WHEN_LEFT)
+  }
+
+  const daFirmare = withPath.filter((p) => !isFresh(p.path)).map((p) => p.path)
   const CHUNK = 100
-  for (let i = 0; i < withPath.length; i += CHUNK) {
-    const chunk = withPath.slice(i, i + CHUNK)
+  for (let i = 0; i < daFirmare.length; i += CHUNK) {
+    const chunk = daFirmare.slice(i, i + CHUNK)
     const { data, error } = await client.storage
       .from(PHOTO_BUCKET)
-      .createSignedUrls(chunk.map((p) => p.path), SIGNED_URL_TTL)
+      .createSignedUrls(chunk, SIGNED_URL_TTL)
     // Una foto che non si firma non deve far fallire tutto il caricamento.
     if (error || !data) continue
     data.forEach((entry) => {
-      if (entry.signedUrl && entry.path) signedByPath.set(entry.path, entry.signedUrl)
+      if (entry.signedUrl && entry.path) {
+        cache[entry.path] = { url: entry.signedUrl, exp: now + SIGNED_URL_TTL }
+      }
     })
   }
-  return photos.map((p) => ({ ...p, url: signedByPath.get(p.path) ?? p.url }))
+
+  // Le foto cancellate non devono restare in cache per sempre.
+  const vive = new Set(withPath.map((p) => p.path))
+  for (const path of Object.keys(cache)) {
+    if (!vive.has(path)) delete cache[path]
+  }
+  writeSignedCache(cache)
+
+  return photos.map((p) => ({ ...p, url: cache[p.path]?.url ?? p.url }))
 }
 
 function cloudBackend(client: NonNullable<typeof supabase>): Backend {
@@ -307,6 +368,7 @@ function cloudBackend(client: NonNullable<typeof supabase>): Backend {
         .upload(path, blob, { contentType: blob.type || 'image/jpeg', upsert: true })
       if (error) throw new Error(`Caricamento foto fallito: ${error.message}`)
       const { data: signed } = await client.storage.from(PHOTO_BUCKET).createSignedUrl(path, SIGNED_URL_TTL)
+      if (signed?.signedUrl) rememberSigned(path, signed.signedUrl)
       const photo: Photo = {
         id,
         scope,

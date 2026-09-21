@@ -9,6 +9,8 @@ un'app vera, senza passare dagli store.
 
 > **Per metterla online: [SETUP.md](SETUP.md).** Mezz'ora di copia-incolla,
 > niente codice.
+>
+> **Quanto costa e quanto durano i piani gratuiti: [COSTI.md](COSTI.md).**
 
 ---
 
@@ -114,7 +116,10 @@ l'app la ridimensiona a 1600px e la manda a circa 300 KB. Nessuna differenza
 visibile sullo schermo, ma lo spazio gratuito dura più o meno dieci volte tanto.
 
 **Il bucket delle foto è privato.** Gli indirizzi sono firmati e generati dopo
-il login: senza password non si vede niente, nemmeno avendo il link.
+il login: senza password non si vede niente, nemmeno avendo il link. Gli
+indirizzi vengono però ricordati fino alla scadenza: rifirmarli a ogni avvio
+cambierebbe la query string e il browser riscaricherebbe foto che ha già,
+bruciando il traffico incluso nel piano gratuito.
 
 ---
 

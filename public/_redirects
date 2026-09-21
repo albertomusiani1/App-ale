@@ -1,0 +1,7 @@
+# Noi Due è una single page app: qualsiasi indirizzo deve servire index.html,
+# altrimenti aprire direttamente /tutte o /impostazioni darebbe 404.
+#
+# Questo file lo leggono sia Cloudflare Pages sia Netlify, quindi l'app si
+# pubblica su entrambi senza cambiare niente. Su Netlify la stessa regola sta
+# anche in netlify.toml.
+/*    /index.html   200
