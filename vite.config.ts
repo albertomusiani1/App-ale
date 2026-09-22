@@ -12,7 +12,7 @@ export default defineConfig({
         name: 'LoviDovi',
         short_name: 'LoviDovi',
         description: 'Il diario gamificato della nostra storia',
-        theme_color: '#F5B301',
+        theme_color: '#F6C85F',
         background_color: '#FFFCF3',
         display: 'standalone',
         orientation: 'portrait',

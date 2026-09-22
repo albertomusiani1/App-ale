@@ -13,7 +13,7 @@ export default {
         muted: '#7A6A72',
         // Una tinta per categoria: riconoscibile a colpo d'occhio sul calendario
         cat: {
-          agenda: '#F5B301',   // giallo  - il colore dell'app, impegni e appuntamenti
+          agenda: '#F6C85F',   // giallo pastello - il colore dell'app, impegni e appuntamenti
           trips: '#2E7DD1',    // blu     - viaggi
           places: '#E8833A',   // arancio - ristoranti e bar
           goals: '#E8638C',    // rosa    - achievement

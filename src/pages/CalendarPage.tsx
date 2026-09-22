@@ -46,6 +46,19 @@ export function CalendarPage() {
     setMonth((m) => (delta > 0 ? addMonths(m, 1) : subMonths(m, 1)))
   }
 
+  /**
+   * Cosa dire di una voce sotto il titolo. Per una cosa che dura più giorni
+   * dice a che punto siamo; per una di un giorno solo non dice niente, e la
+   * riga resta l'ora da sola invece di un trattino appeso nel vuoto.
+   */
+  function dettaglio(entry: DayEntry): string {
+    if (entry.subtitle) return entry.subtitle
+    if (entry.isStart && entry.isEnd) return ''
+    if (entry.isStart) return t('home.starts')
+    if (entry.isEnd) return t('home.ends')
+    return t('home.ongoing')
+  }
+
   function openEntry(entry: DayEntry) {
     if (entry.kind === 'item' && entry.categoryId) {
       navigate(`/c/${entry.categoryId}/${entry.refId}`)
@@ -58,7 +71,7 @@ export function CalendarPage() {
   return (
     <div className="pb-4">
       {/* Intestazione con il contatore della relazione */}
-      <div className="relative mb-4 overflow-hidden rounded-3xl bg-gradient-to-br from-[#FFC93C] to-[#E09600] px-5 py-4 text-[#3D2B00] shadow-lift">
+      <div className="relative mb-4 overflow-hidden rounded-3xl bg-gradient-to-br from-[#FFE7A8] to-[#F3C45C] px-5 py-4 text-[#3D2B00] shadow-lift">
         <Glitter count={14} seed={11} />
         <div className="relative">
           <p className="text-xs font-bold uppercase tracking-[0.2em] opacity-70">{t('home.eyebrow')}</p>
@@ -203,15 +216,7 @@ export function CalendarPage() {
                     <span className="min-w-0 flex-1">
                       <span className="block truncate font-bold">{entry.title}</span>
                       <span className="block truncate text-sm text-muted">
-                        {entry.time && <>{entry.time} · </>}
-                        {entry.subtitle ||
-                          (entry.isStart && !entry.isEnd
-                            ? t('home.starts')
-                            : entry.isEnd && !entry.isStart
-                              ? t('home.ends')
-                              : !entry.isStart
-                                ? t('home.ongoing')
-                                : '')}
+                        {[entry.time, dettaglio(entry)].filter(Boolean).join(' · ')}
                       </span>
                     </span>
                     <span className="text-muted" aria-hidden>

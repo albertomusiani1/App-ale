@@ -14,7 +14,7 @@ export const PALETTE: Record<
   ColorKey,
   { hex: string; soft: string; ink: string; on: string; label: string }
 > = {
-  agenda: { hex: '#F5B301', soft: '#FFF4D6', ink: '#7A5600', on: '#3D2B00', label: 'Giallo' },
+  agenda: { hex: '#F6C85F', soft: '#FFF8E6', ink: '#7A5600', on: '#3D2B00', label: 'Giallo' },
   trips: { hex: '#2E7DD1', soft: '#E1EEFB', ink: '#14507F', on: '#FFFFFF', label: 'Blu' },
   places: { hex: '#E8833A', soft: '#FDEEE0', ink: '#8A4712', on: '#FFFFFF', label: 'Arancio' },
   goals: { hex: '#E8638C', soft: '#FDE7EE', ink: '#8E2B4C', on: '#FFFFFF', label: 'Rosa' },
