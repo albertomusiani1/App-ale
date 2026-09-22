@@ -6,12 +6,14 @@ import { useAuth } from './store/AuthContext'
 import { BottomNav } from './components/BottomNav'
 import { AddSheet } from './components/AddSheet'
 import { CelebrationOverlay } from './components/Celebration'
+import { ExamPrompt } from './components/ExamPrompt'
 import { SayingBubble } from './components/SayingBubble'
 import { PulsingHeart } from './components/Magic'
 import { CalendarPage } from './pages/CalendarPage'
 import { CategoryPage } from './pages/CategoryPage'
 import { ItemDetailPage } from './pages/ItemDetailPage'
 import { AllCategoriesPage } from './pages/AllCategoriesPage'
+import { PlansPage } from './pages/PlansPage'
 import { WorldMapPage } from './pages/WorldMapPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { LoginPage, WhoAreYou } from './pages/LoginPage'
@@ -80,6 +82,7 @@ function Shell() {
               <Route path="/c/:categoryId/:itemId" element={<ItemDetailPage />} />
               <Route path="/tutte" element={<AllCategoriesPage />} />
               <Route path="/mappa" element={<WorldMapPage />} />
+              <Route path="/impegni" element={<PlansPage />} />
               <Route path="/impostazioni" element={<SettingsPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
@@ -91,6 +94,7 @@ function Shell() {
       <BottomNav onAdd={() => setAddOpen(true)} />
       <AddSheet open={addOpen} onClose={() => setAddOpen(false)} />
       <CelebrationOverlay />
+      <ExamPrompt />
     </div>
   )
 }

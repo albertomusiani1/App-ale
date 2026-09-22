@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useApp } from '../store/AppStore'
+import { useAuth } from '../store/AuthContext'
 import { randomId } from '../lib/image'
 import { COLOR_KEYS, colorOf } from '../lib/colors'
 import { todayISO } from '../lib/dates'
@@ -15,6 +16,9 @@ const blankEvent = (date: string): CalEvent => ({
   time: null,
   notes: '',
   color: 'agenda',
+  author: null,
+  examOutcome: null,
+  examAskAfter: null,
   createdAt: new Date().toISOString(),
 })
 
@@ -30,7 +34,8 @@ export function EventSheet({
   event?: CalEvent | null
   defaultDate?: string
 }) {
-  const { saveEvent, deleteEvent } = useApp()
+  const { saveEvent, deleteEvent, data, t } = useApp()
+  const { me } = useAuth()
   const [draft, setDraft] = useState<CalEvent>(() => event ?? blankEvent(defaultDate ?? todayISO()))
 
   useEffect(() => {
@@ -39,6 +44,9 @@ export function EventSheet({
 
   const set = <K extends keyof CalEvent>(k: K, v: CalEvent[K]) => setDraft((d) => ({ ...d, [k]: v }))
   const canSave = draft.title.trim().length > 0 && Boolean(draft.date)
+  const isExam = /esame/i.test(draft.title)
+  const author =
+    draft.author === 'a' ? data.settings.nameA : draft.author === 'b' ? data.settings.nameB : null
 
   return (
     <Sheet
@@ -52,7 +60,13 @@ export function EventSheet({
           </button>
           <button
             onClick={() => {
-              void saveEvent({ ...draft, title: draft.title.trim() })
+              // Chi crea l'impegno lo firma; modificandolo la firma non cambia,
+              // così resta la traccia di chi l'aveva messo in calendario.
+              void saveEvent({
+                ...draft,
+                title: draft.title.trim(),
+                author: draft.author ?? me,
+              })
               onClose()
             }}
             disabled={!canSave}
@@ -119,6 +133,45 @@ export function EventSheet({
       <Field label="Note">
         <TextArea value={draft.notes} onChange={(e) => set('notes', e.target.value)} />
       </Field>
+
+      {isExam && (
+        <FieldGroup
+          label="🎓 Questo è un esame"
+          hint="Riconosciuto dalla parola “esame” nel titolo. Passata la data, l app chiede com è andata."
+        >
+          <div className="flex gap-2">
+            {(
+              [
+                [null, 'Non si sa'],
+                ['passed', t('exam.yes')],
+                ['failed', t('exam.no')],
+              ] as const
+            ).map(([value, label]) => {
+              const active = draft.examOutcome === value
+              const c = colorOf(value === 'passed' ? 'outings' : 'agenda')
+              return (
+                <button
+                  key={String(value)}
+                  type="button"
+                  onClick={() => setDraft((d) => ({ ...d, examOutcome: value, examAskAfter: null }))}
+                  className="flex-1 rounded-2xl border px-2 py-2.5 text-sm font-semibold transition active:scale-95"
+                  style={
+                    active
+                      ? { background: c.hex, color: c.on, borderColor: c.hex }
+                      : { background: '#fff', borderColor: 'rgba(0,0,0,0.08)' }
+                  }
+                >
+                  {label}
+                </button>
+              )
+            })}
+          </div>
+        </FieldGroup>
+      )}
+
+      {author && (
+        <p className="text-center text-xs text-muted">Messo in calendario da {author}.</p>
+      )}
 
       {event && (
         <ConfirmButton

@@ -159,8 +159,8 @@ export function CategoryPage() {
 
       <button
         onClick={() => setCreating(true)}
-        className="btn mt-5 w-full text-white shadow-lift"
-        style={{ background: c.hex }}
+        className="btn mt-5 w-full shadow-lift"
+        style={{ background: c.hex, color: c.on }}
       >
         ＋ Aggiungi un {copy.one}
       </button>
@@ -245,6 +245,8 @@ export function ItemCard({
           {stops.length > 0 && <span>📍 {stops.length} tappe</span>}
           {photoCount > 0 && <span>📷 {photoCount}</span>}
           {item.meta.type && <span>{item.meta.type}</span>}
+          {item.meta.cuisine && <span>🍽️ {item.meta.cuisine}</span>}
+          {item.visits > 1 && <span>🔁 {item.visits} volte</span>}
         </div>
 
         {item.status === 'done' && (item.ratingA || item.ratingB) && (

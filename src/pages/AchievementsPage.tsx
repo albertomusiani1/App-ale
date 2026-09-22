@@ -1,37 +1,54 @@
-import { useMemo, useState } from 'react'
+import { useId, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useApp } from '../store/AppStore'
 import { counters, progressOf } from '../lib/achievements'
+import { LADDERS, ladderCounts, progressOfLadder } from '../lib/ladders'
 import { colorOf } from '../lib/colors'
 import { randomId } from '../lib/image'
 import { longDate } from '../lib/dates'
 import { Sheet, ConfirmButton } from '../components/Sheet'
-import { Field, FieldGroup, Input, PageTitle, Progress, TextArea } from '../components/ui'
+import { Field, Input, PageTitle, Progress, TextArea } from '../components/ui'
 import { Glitter } from '../components/Magic'
 import type { Achievement, Category } from '../types'
 
-/** La bacheca dei traguardi: quelli sbloccati brillano, gli altri mostrano quanto manca. */
+/**
+ * La bacheca dei traguardi, divisa in due.
+ *
+ * In alto le **scale**: quelle che non finiscono mai (anni insieme, viaggi,
+ * posti, film, uscite, esami). Ognuna è un riquadro solo che dice a che punto
+ * siamo e quanto manca al prossimo scalino, invece delle dieci schede separate
+ * che c'erano prima.
+ *
+ * Sotto i traguardi **una tantum**: quelli che si sbloccano una volta e basta.
+ */
 export function AchievementsPage({ category }: { category: Category }) {
   const { data, saveAchievement, celebrate, t } = useApp()
   const [editing, setEditing] = useState<Achievement | null>(null)
   const [creating, setCreating] = useState(false)
 
   const counts = useMemo(() => counters(data), [data])
+  const lCounts = useMemo(() => ladderCounts(data), [data])
   const c = colorOf(category.color)
 
-  const sorted = useMemo(() => {
-    return [...data.achievements].sort((a, b) => {
-      // Sbloccati in cima (più recenti prima), poi i più vicini al traguardo.
-      if (a.unlockedAt && b.unlockedAt) return b.unlockedAt.localeCompare(a.unlockedAt)
-      if (a.unlockedAt) return -1
-      if (b.unlockedAt) return 1
-      return progressOf(b.key, b.target, counts) - progressOf(a.key, a.target, counts)
-    })
-  }, [data.achievements, counts])
+  const oneOff = useMemo(
+    () =>
+      [...data.achievements].sort((a, b) => {
+        if (a.unlockedAt && b.unlockedAt) return b.unlockedAt.localeCompare(a.unlockedAt)
+        if (a.unlockedAt) return -1
+        if (b.unlockedAt) return 1
+        return progressOf(b.key, b.target, counts) - progressOf(a.key, a.target, counts)
+      }),
+    [data.achievements, counts],
+  )
 
-  const unlocked = sorted.filter((a) => a.unlockedAt).length
+  const unlocked = oneOff.filter((a) => a.unlockedAt).length
+  const levels = LADDERS.reduce(
+    (sum, l) => sum + (data.ladders.find((x) => x.id === l.key)?.level ?? 0),
+    0,
+  )
+  const total = unlocked + levels
 
-  /** Gli achievement manuali si spuntano a mano, e festeggiano subito. */
+  /** I traguardi manuali si spuntano a mano, e festeggiano subito. */
   function toggleManual(a: Achievement) {
     if (a.unlockedAt) {
       void saveAchievement({ ...a, unlockedAt: null })
@@ -54,7 +71,7 @@ export function AchievementsPage({ category }: { category: Category }) {
       <PageTitle
         emoji={category.emoji}
         title={category.name}
-        subtitle={`${unlocked} ${unlocked === 1 ? 'sbloccato' : 'sbloccati'} su ${data.achievements.length}`}
+        subtitle={`${total} ${total === 1 ? 'traguardo' : 'traguardi'} in tutto`}
         color={category.color}
       />
 
@@ -65,22 +82,69 @@ export function AchievementsPage({ category }: { category: Category }) {
         <Glitter count={16} seed={5} />
         <div className="relative">
           <p className="font-display text-4xl font-bold" style={{ color: c.ink }}>
-            {unlocked}
+            {total}
           </p>
           <p className="text-sm font-semibold" style={{ color: c.ink }}>
-            {unlocked === 1 ? t('achievements.counterOne') : t('achievements.counter')}
+            {total === 1 ? t('achievements.counterOne') : t('achievements.counter')}
           </p>
-          <div className="mx-auto mt-3 max-w-xs">
-            <Progress
-              value={data.achievements.length ? unlocked / data.achievements.length : 0}
-              color={category.color}
-            />
-          </div>
         </div>
       </div>
 
+      {/* --- Le scale, quelle che crescono con noi --- */}
+      <h2 className="mb-2 font-display text-xl font-bold">Le nostre scale</h2>
+      <ul className="mb-6 space-y-2.5">
+        {LADDERS.map((ladder) => {
+          const p = progressOfLadder(ladder, lCounts[ladder.source] ?? 0)
+          const lc = colorOf(ladder.color)
+          const mancano = Math.max(0, p.next - p.count)
+          return (
+            <li key={ladder.key}>
+              <div
+                className="relative overflow-hidden rounded-3xl p-4 shadow-soft"
+                style={{ background: p.level > 0 ? lc.soft : '#fff' }}
+              >
+                {p.level > 0 && <Glitter count={6} seed={ladder.key.length} />}
+                <div className="relative flex items-center gap-3">
+                  <span
+                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-2xl"
+                    style={{ background: p.level > 0 ? '#fff' : lc.soft }}
+                    aria-hidden
+                  >
+                    {ladder.emoji}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="flex items-baseline gap-2">
+                      <span className="font-display text-lg font-bold">{ladder.title}</span>
+                      {p.level > 0 && (
+                        <span
+                          className="pill shrink-0"
+                          style={{ background: lc.hex, color: lc.on }}
+                        >
+                          livello {p.level}
+                        </span>
+                      )}
+                    </p>
+                    <p className="text-sm text-muted">
+                      {p.count} {ladder.unit} ·{' '}
+                      {mancano === 0
+                        ? 'scalino raggiunto!'
+                        : `${mancano} al prossimo (${p.next})`}
+                    </p>
+                  </div>
+                </div>
+                <div className="relative mt-3">
+                  <Progress value={p.ratio} color={ladder.color} />
+                </div>
+              </div>
+            </li>
+          )
+        })}
+      </ul>
+
+      {/* --- I traguardi una tantum --- */}
+      <h2 className="mb-2 font-display text-xl font-bold">Una volta sola</h2>
       <ul className="grid grid-cols-2 gap-3">
-        {sorted.map((a) => {
+        {oneOff.map((a) => {
           const done = Boolean(a.unlockedAt)
           const progress = progressOf(a.key, a.target, counts)
           const current = Math.min(counts[a.key] ?? 0, a.target)
@@ -135,8 +199,8 @@ export function AchievementsPage({ category }: { category: Category }) {
 
       <button
         onClick={() => setCreating(true)}
-        className="btn mt-5 w-full text-white shadow-lift"
-        style={{ background: c.hex }}
+        className="btn mt-5 w-full shadow-lift"
+        style={{ background: c.hex, color: c.on }}
       >
         {t('achievements.create')}
       </button>
@@ -179,6 +243,7 @@ function AchievementSheet({
 }) {
   const { saveAchievement, deleteAchievement } = useApp()
   const [draft, setDraft] = useState<Achievement>(() => achievement ?? blankAchievement())
+  const emojiLabel = useId()
 
   // Ricarica il contenuto giusto ogni volta che il pannello si apre.
   const key = `${open}-${achievement?.id ?? 'new'}`
@@ -207,8 +272,8 @@ function AchievementSheet({
               onClose()
             }}
             disabled={!draft.title.trim()}
-            className="btn flex-[2] text-white shadow-lift"
-            style={{ background: colorOf('goals').hex }}
+            className="btn flex-[2] shadow-lift"
+            style={{ background: colorOf('goals').hex, color: colorOf('goals').on }}
           >
             Salva
           </button>
@@ -228,7 +293,10 @@ function AchievementSheet({
         <TextArea value={draft.description} onChange={(e) => set('description', e.target.value)} />
       </Field>
 
-      <FieldGroup label="Icona">
+      <div role="group" aria-labelledby={emojiLabel}>
+        <span id={emojiLabel} className="label">
+          Icona
+        </span>
         <div className="flex flex-wrap gap-2">
           {EMOJI.map((e) => (
             <button
@@ -245,11 +313,11 @@ function AchievementSheet({
             </button>
           ))}
         </div>
-      </FieldGroup>
+      </div>
 
       {achievement?.kind === 'auto' && (
         <p className="rounded-2xl bg-white px-4 py-3 text-sm text-muted shadow-soft">
-          Questo traguardo si sblocca da solo: conta i vostri dati e arriva quando è il momento.
+          Questo traguardo si sblocca da solo: conta i nostri dati e arriva quando è il momento.
         </p>
       )}
 

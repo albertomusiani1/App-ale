@@ -196,15 +196,18 @@ modificate serve una nuova pubblicazione.
 Ogni tanto una funzione nuova ha bisogno di una colonna in più nel database.
 Succede raramente, ma quando succede va fatto a mano, una volta sola.
 
-**È il caso di adesso**, per mappe, nome e frasi personalizzabili:
+**È il caso di adesso**, per mappe, nome e frasi personalizzabili, e poi ancora
+per impegni firmati, esami, contatore delle visite e traguardi a livelli:
 
 1. Supabase → **SQL Editor** → **New query**
 2. Incolla di nuovo tutto [`supabase/schema.sql`](supabase/schema.sql) — quello
    aggiornato, non quello di prima
 3. **Run**
 
-Lo script è fatto per essere rieseguito: non tocca niente di quello che avete
-già scritto, aggiunge solo le colonne che mancano.
+Lo script è fatto per essere rieseguito: non tocca niente di quello che abbiamo
+già scritto, aggiunge solo le colonne che mancano. L'unica cosa che rimuove
+sono le vecchie schede dei traguardi numerati (1, 5, 10 viaggi...), sostituite
+dalle scale a livelli — e solo quelle di partenza, mai quelle inventate da noi.
 
 > Se salti questo passaggio l'app si apre lo stesso, ma appena provi a salvare
 > una posizione sulla mappa o a riscrivere una frase compare un errore rosso in

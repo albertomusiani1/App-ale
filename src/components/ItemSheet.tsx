@@ -23,6 +23,7 @@ const blankItem = (categoryId: string): Item => ({
   coverPhotoId: null,
   lat: null,
   lng: null,
+  visits: 0,
   createdAt: new Date().toISOString(),
 })
 
@@ -84,8 +85,8 @@ export function ItemSheet({
           <button
             onClick={() => void handleSave()}
             disabled={!canSave}
-            className="btn flex-[2] text-white shadow-lift"
-            style={{ background: c.hex }}
+            className="btn flex-[2] shadow-lift"
+            style={{ background: c.hex, color: c.on }}
           >
             {isNew ? 'Crea' : 'Salva'}
           </button>
@@ -141,11 +142,39 @@ export function ItemSheet({
                   className="rounded-full px-3.5 py-2 text-sm font-semibold transition active:scale-95"
                   style={
                     active
-                      ? { background: c.hex, color: '#fff' }
+                      ? { background: c.hex, color: c.on }
                       : { background: '#fff', color: c.ink, border: '1px solid rgba(0,0,0,0.08)' }
                   }
                 >
                   {t}
+                </button>
+              )
+            })}
+          </div>
+        </FieldGroup>
+      )}
+
+      {copy.cuisines && (
+        <FieldGroup
+          label="Che cucina"
+          hint="Il primo giapponese provato sblocca un traguardo 🍣"
+        >
+          <div className="flex flex-wrap gap-2">
+            {copy.cuisines.map((k) => {
+              const active = (draft.meta.cuisine ?? '') === k
+              return (
+                <button
+                  key={k}
+                  type="button"
+                  onClick={() => set('meta', { ...draft.meta, cuisine: active ? '' : k })}
+                  className="rounded-full px-3.5 py-2 text-sm font-semibold transition active:scale-95"
+                  style={
+                    active
+                      ? { background: c.hex, color: c.on }
+                      : { background: '#fff', color: c.ink, border: '1px solid rgba(0,0,0,0.08)' }
+                  }
+                >
+                  {k}
                 </button>
               )
             })}

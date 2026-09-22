@@ -72,8 +72,8 @@ export function ItemDetailPage() {
         </Link>
         <button
           onClick={() => setEditing(true)}
-          className="rounded-full px-4 py-2 text-sm font-bold text-white shadow-soft active:scale-95"
-          style={{ background: c.hex }}
+          className="rounded-full px-4 py-2 text-sm font-bold shadow-soft active:scale-95"
+          style={{ background: c.hex, color: c.on }}
         >
           ✏️ Modifica
         </button>
@@ -87,6 +87,11 @@ export function ItemDetailPage() {
             {item.meta.type && (
               <span className="pill" style={{ background: c.soft, color: c.ink }}>
                 {item.meta.type}
+              </span>
+            )}
+            {item.meta.cuisine && (
+              <span className="pill" style={{ background: c.soft, color: c.ink }}>
+                🍽️ {item.meta.cuisine}
               </span>
             )}
           </div>
@@ -104,6 +109,35 @@ export function ItemDetailPage() {
             <p className="mt-1 text-sm text-muted">
               📍 {plural(stops.length, 'tappa', 'tappe')} · {plural(totalDays, 'giorno', 'giorni')}
             </p>
+          )}
+
+          {copy.counted && item.status === 'done' && (
+            <div className="mt-4 flex items-center gap-3 rounded-2xl px-4 py-3" style={{ background: c.soft }}>
+              <span className="min-w-0 flex-1">
+                <span className="block font-display text-lg font-bold" style={{ color: c.ink }}>
+                  Ci siamo stati {item.visits === 1 ? 'una volta' : `${item.visits} volte`}
+                </span>
+                <span className="block text-xs" style={{ color: c.ink, opacity: 0.8 }}>
+                  Tocca ＋ ogni volta che ci torniamo.
+                </span>
+              </span>
+              <button
+                onClick={() => void saveItem({ ...item, visits: Math.max(0, item.visits - 1) })}
+                disabled={item.visits === 0}
+                aria-label="Una volta in meno"
+                className="h-10 w-10 shrink-0 rounded-2xl bg-white text-xl shadow-soft active:scale-90 disabled:opacity-40"
+              >
+                −
+              </button>
+              <button
+                onClick={() => void saveItem({ ...item, visits: item.visits + 1 })}
+                aria-label="Ci siamo tornati"
+                className="h-10 w-10 shrink-0 rounded-2xl text-xl shadow-soft active:scale-90"
+                style={{ background: c.hex, color: c.on }}
+              >
+                ＋
+              </button>
+            </div>
           )}
 
           {copy.rated && item.status === 'done' && (
@@ -140,8 +174,8 @@ export function ItemDetailPage() {
             <h2 className="font-display text-xl font-bold">Tappe</h2>
             <button
               onClick={() => setStopSheet({ stop: null })}
-              className="rounded-full px-3 py-1.5 text-sm font-bold text-white active:scale-95"
-              style={{ background: c.hex }}
+              className="rounded-full px-3 py-1.5 text-sm font-bold active:scale-95"
+              style={{ background: c.hex, color: c.on }}
             >
               ＋ Tappa
             </button>
@@ -224,8 +258,8 @@ function StopCard({
     <li className="card overflow-hidden">
       <div className="flex items-center gap-3 p-4">
         <span
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl font-display text-lg font-bold text-white"
-          style={{ background: c.hex }}
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl font-display text-lg font-bold"
+          style={{ background: c.hex, color: c.on }}
         >
           {index + 1}
         </span>

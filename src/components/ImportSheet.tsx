@@ -79,6 +79,7 @@ export function ImportSheet({
           coverPhotoId: null,
           lat: first?.lat ?? null,
           lng: first?.lng ?? null,
+          visits: 0,
           createdAt: new Date().toISOString(),
         }
         await saveItem(item)
@@ -115,6 +116,7 @@ export function ImportSheet({
             coverPhotoId: null,
             lat: p.lat,
             lng: p.lng,
+            visits: 0,
             createdAt: new Date().toISOString(),
           })
         }
@@ -145,8 +147,8 @@ export function ImportSheet({
             <button
               onClick={() => void confirm()}
               disabled={busy}
-              className="btn flex-[2] text-white shadow-lift"
-              style={{ background: c.hex }}
+              className="btn flex-[2] shadow-lift"
+              style={{ background: c.hex, color: c.on }}
             >
               {busy ? 'Importo…' : asTrip ? 'Crea il viaggio' : `Crea ${parsed.places.length} schede`}
             </button>

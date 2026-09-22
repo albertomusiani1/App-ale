@@ -9,7 +9,7 @@ import { PageTitle } from '../components/ui'
 import { Glitter } from '../components/Magic'
 
 /**
- * La griglia con tutte le categorie, comprese quelle che avete creato voi.
+ * La griglia con tutte le categorie, comprese quelle che abbiamo creato noi.
  * È qui che la barra in basso "scarica" tutto quello che non ci sta.
  */
 export function AllCategoriesPage() {
@@ -89,9 +89,17 @@ export function AllCategoriesPage() {
       </ul>
 
       <Link
+        to="/impegni"
+        className="btn mt-5 w-full shadow-lift"
+        style={{ background: colorOf('agenda').hex, color: colorOf('agenda').on }}
+      >
+        📌 {t('nav.plans')}
+      </Link>
+
+      <Link
         to="/mappa"
-        className="btn mt-5 w-full text-white shadow-lift"
-        style={{ background: colorOf('trips').hex }}
+        className="btn mt-2 w-full shadow-lift"
+        style={{ background: colorOf('trips').hex, color: colorOf('trips').on }}
       >
         🌍 {t('nav.world')}
       </Link>

@@ -2,7 +2,9 @@ import type {
   Achievement,
   CalEvent,
   Category,
+  ExamOutcome,
   Item,
+  LadderState,
   Photo,
   PhotoScope,
   Quote,
@@ -24,6 +26,7 @@ export interface Dataset {
   photos: Photo[]
   events: CalEvent[]
   achievements: Achievement[]
+  ladders: LadderState[]
   sayings: Saying[]
   quotes: Quote[]
   settings: Settings
@@ -39,6 +42,7 @@ export const emptyDataset = (): Dataset => ({
   photos: [],
   events: [],
   achievements: [],
+  ladders: [],
   sayings: [],
   quotes: [],
   settings: { ...DEFAULT_SETTINGS },
@@ -69,6 +73,7 @@ const TABLE_NAMES: Record<TableName, string> = {
   photos: 'photos',
   events: 'events',
   achievements: 'achievements',
+  ladders: 'ladders',
   sayings: 'sayings',
   quotes: 'quotes',
 }
@@ -104,6 +109,7 @@ const mappers: { [K in TableName]: { to: (v: Dataset[K][number]) => AnyRow; from
       cover_photo_id: i.coverPhotoId,
       lat: i.lat,
       lng: i.lng,
+      visits: i.visits,
       created_at: i.createdAt,
     }),
     from: (r) => ({
@@ -121,6 +127,7 @@ const mappers: { [K in TableName]: { to: (v: Dataset[K][number]) => AnyRow; from
       coverPhotoId: (r.cover_photo_id as string) ?? null,
       lat: (r.lat as number) ?? null,
       lng: (r.lng as number) ?? null,
+      visits: Number(r.visits ?? 0),
       createdAt: (r.created_at as string) ?? new Date().toISOString(),
     }),
   },
@@ -171,7 +178,19 @@ const mappers: { [K in TableName]: { to: (v: Dataset[K][number]) => AnyRow; from
     }),
   },
   events: {
-    to: (e) => ({ id: e.id, title: e.title, date: e.date, end_date: e.endDate, time: e.time, notes: e.notes, color: e.color, created_at: e.createdAt }),
+    to: (e) => ({
+      id: e.id,
+      title: e.title,
+      date: e.date,
+      end_date: e.endDate,
+      time: e.time,
+      notes: e.notes,
+      color: e.color,
+      author: e.author,
+      exam_outcome: e.examOutcome,
+      exam_ask_after: e.examAskAfter,
+      created_at: e.createdAt,
+    }),
     from: (r) => ({
       id: r.id as string,
       title: (r.title as string) ?? '',
@@ -180,6 +199,9 @@ const mappers: { [K in TableName]: { to: (v: Dataset[K][number]) => AnyRow; from
       time: (r.time as string) ?? null,
       notes: (r.notes as string) ?? '',
       color: (r.color as CalEvent['color']) ?? 'agenda',
+      author: (r.author as CalEvent['author']) ?? null,
+      examOutcome: (r.exam_outcome as ExamOutcome) ?? null,
+      examAskAfter: (r.exam_ask_after as string) ?? null,
       createdAt: (r.created_at as string) ?? new Date().toISOString(),
     }),
   },
@@ -205,6 +227,15 @@ const mappers: { [K in TableName]: { to: (v: Dataset[K][number]) => AnyRow; from
       target: Number(r.target ?? 1),
       unlockedAt: (r.unlocked_at as string) ?? null,
       custom: Boolean(r.custom),
+    }),
+  },
+  ladders: {
+    // La chiave della scala fa da id: ce n'è una riga sola per scala.
+    to: (l) => ({ id: l.id, level: l.level, unlocked_at: l.unlockedAt }),
+    from: (r) => ({
+      id: r.id as string,
+      level: Number(r.level ?? 0),
+      unlockedAt: (r.unlocked_at as string) ?? null,
     }),
   },
   sayings: {

@@ -117,7 +117,7 @@ export function WorldMapPage() {
           className="shrink-0 rounded-full px-3.5 py-2 text-sm font-semibold transition active:scale-95"
           style={
             only === null
-              ? { background: '#2B1F26', color: '#fff' }
+              ? { background: '#2B1F26', color: '#FFFFFF' }
               : { background: '#fff', color: '#7A6A72' }
           }
         >
@@ -131,7 +131,7 @@ export function WorldMapPage() {
               key={category.id}
               onClick={() => setOnly(active ? null : category.id)}
               className="shrink-0 rounded-full px-3.5 py-2 text-sm font-semibold transition active:scale-95"
-              style={active ? { background: c.hex, color: '#fff' } : { background: c.soft, color: c.ink }}
+              style={active ? { background: c.hex, color: c.on } : { background: c.soft, color: c.ink }}
             >
               {category.emoji} {category.name}
             </button>

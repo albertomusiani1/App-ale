@@ -1,50 +1,42 @@
 import type { Dataset } from './db'
 import { CAT } from './seed'
-import { yearsSince } from './dates'
 
 /**
- * Quanto siete avanti su ogni "famiglia" di achievement.
- * La chiave corrisponde al campo `key` dell'achievement: più achievement
- * possono condividere la stessa chiave con target diversi (1, 5, 10 viaggi...).
+ * I contatori dei traguardi "una tantum", quelli che si sbloccano una volta
+ * sola e poi restano lì.
+ *
+ * Quelli che si ripetono all'infinito — anni insieme, viaggi, posti, film,
+ * uscite, esami — non passano più da qui: sono scale a livelli, e stanno in
+ * lib/ladders.ts.
  */
-export function counters(data: Dataset, now = new Date()): Record<string, number> {
-  const done = (categoryId: string) =>
-    data.items.filter((i) => i.categoryId === categoryId && i.status === 'done').length
-
-  const doneTripIds = new Set(
-    data.items.filter((i) => i.categoryId === CAT.trips && i.status === 'done').map((i) => i.id),
-  )
-
+export function counters(data: Dataset): Record<string, number> {
   return {
-    anniversary: yearsSince(data.settings.anniversary, now),
-    tripsDone: done(CAT.trips),
-    stopsDone: data.stops.filter((s) => doneTripIds.has(s.itemId)).length,
-    placesDone: done(CAT.places),
-    outingsDone: done(CAT.outings),
-    screenDone: done(CAT.screen),
+    // Il primo sushi dell'era-app: un posto provato con cucina giapponese.
+    sushi: data.items.filter(
+      (i) =>
+        i.categoryId === CAT.places &&
+        i.status === 'done' &&
+        (i.meta.cuisine ?? '').toLowerCase() === 'giapponese',
+    ).length,
     sayings: data.sayings.length,
     photos: data.photos.filter((p) => p.scope !== 'taylor').length,
-    // Gli achievement manuali non hanno un contatore: li spuntate voi.
+    // Quelli manuali non hanno un contatore: li spuntiamo noi.
     manual: 0,
   }
 }
 
-/** Progresso 0-1 di un singolo achievement, per la barra nella lista. */
+/** Progresso 0-1 di un traguardo una tantum, per la barra nella lista. */
 export function progressOf(key: string, target: number, counts: Record<string, number>): number {
   if (key === 'manual' || target <= 0) return 0
   return Math.min(1, (counts[key] ?? 0) / target)
 }
 
 /**
- * Gli achievement automatici che hanno raggiunto il traguardo
- * ma non sono ancora stati sbloccati: sono quelli da festeggiare.
- *
- * Sono ordinati dal più impegnativo al più facile, perché quando se ne
- * sbloccano diversi in una volta (mettendo la data dell'anniversario, per
- * esempio) il pop-up deve mostrare "6 anni insieme", non "1 anno insieme".
+ * I traguardi automatici che hanno raggiunto la soglia ma non sono ancora
+ * stati sbloccati: sono quelli da festeggiare.
  */
-export function newlyUnlocked(data: Dataset, now = new Date()): string[] {
-  const counts = counters(data, now)
+export function newlyUnlocked(data: Dataset): string[] {
+  const counts = counters(data)
   return data.achievements
     .filter((a) => a.kind === 'auto' && !a.unlockedAt && (counts[a.key] ?? 0) >= a.target)
     .sort((a, b) => b.target - a.target)

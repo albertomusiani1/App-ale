@@ -42,7 +42,7 @@ export function BottomNav({ onAdd }: { onAdd: () => void }) {
             whileTap={{ scale: 0.88 }}
             onClick={onAdd}
             aria-label="Aggiungi qualcosa"
-            className="-mt-7 flex h-14 w-14 items-center justify-center rounded-full bg-cat-agenda text-3xl font-light text-white shadow-lift ring-4 ring-cream"
+            className="-mt-7 flex h-14 w-14 items-center justify-center rounded-full bg-cat-agenda text-3xl font-light text-[#3D2B00] shadow-lift ring-4 ring-cream"
           >
             <span className="-mt-0.5" aria-hidden>
               +

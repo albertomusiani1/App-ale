@@ -85,7 +85,11 @@ export function SettingsPage() {
                 className="flex-1 rounded-2xl border px-3 py-3 font-semibold transition active:scale-95"
                 style={
                   me === p
-                    ? { background: colorOf('agenda').hex, color: '#fff', borderColor: colorOf('agenda').hex }
+                    ? {
+                        background: colorOf('agenda').hex,
+                        color: colorOf('agenda').on,
+                        borderColor: colorOf('agenda').hex,
+                      }
                     : { background: '#fff', borderColor: 'rgba(0,0,0,0.08)' }
                 }
               >
@@ -213,7 +217,7 @@ function SayingsSection() {
         </div>
         <button
           onClick={() => start(null)}
-          className="shrink-0 rounded-full bg-cat-agenda/10 px-3 py-1.5 text-sm font-semibold text-cat-agenda active:scale-95"
+          className="shrink-0 rounded-full bg-cat-agenda/10 px-3 py-1.5 text-sm font-semibold text-[#7A5600] active:scale-95"
         >
           ＋
         </button>
@@ -297,7 +301,11 @@ function SayingsSection() {
                     className="flex-1 rounded-2xl border px-2 py-2.5 text-sm font-semibold active:scale-95"
                     style={
                       editing.author === a
-                        ? { background: colorOf('agenda').hex, color: '#fff', borderColor: colorOf('agenda').hex }
+                        ? {
+                        background: colorOf('agenda').hex,
+                        color: colorOf('agenda').on,
+                        borderColor: colorOf('agenda').hex,
+                      }
                         : { background: '#fff', borderColor: 'rgba(0,0,0,0.08)' }
                     }
                   >
@@ -462,7 +470,7 @@ function WordsSection() {
           tornare a quella di partenza.
         </p>
         {changed > 0 && (
-          <p className="mt-1 text-xs font-semibold text-cat-agenda">
+          <p className="mt-1 text-xs font-semibold text-[#7A5600]">
             {changed} {changed === 1 ? 'frase riscritta' : 'frasi riscritte'}
           </p>
         )}
@@ -494,7 +502,7 @@ function WordsSection() {
                     <WordField
                       key={field.key}
                       field={field}
-                      value={(texts[field.key] ?? '').trim()}
+                      value={texts[field.key] ?? ''}
                       onWrite={write}
                     />
                   ))}

@@ -49,15 +49,17 @@ Se usate già **Wanderlog**, non si ricomincia da capo: esportate il viaggio in
 un viaggio con le sue tappe; altrove diventa una scheda per ogni posto.
 Funziona anche con gli export di Google My Maps, che usano gli stessi formati.
 
-### 💬 Le vostre parole
-Il nome dell'app e una quarantina di frasi — le celebrazioni, i messaggi delle
-liste vuote, i titoli — si riscrivono dalle Impostazioni, senza toccare il
-codice e senza ripubblicare niente. Svuoti un campo e torna com'era.
+### 💬 Le nostre parole
+Il nome dell'app e una cinquantina di frasi — le celebrazioni, i messaggi delle
+liste vuote, i titoli, le battute di ogni scalino dei traguardi — si riscrivono
+dalle Impostazioni, senza toccare il codice e senza ripubblicare niente. Si
+svuota un campo e torna com'era.
 
 ### 🍝 Ristoranti & Bar
-Posti provati e posti da provare, con il tipo di locale, l'indirizzo, le note
-(cosa prendere, quanto si spende) e **due voti a cuori separati**, uno per
-ciascuno.
+Posti provati e posti da provare, con il tipo di locale, il **tipo di cucina**,
+l'indirizzo, le note (cosa prendere, quanto si spende) e **due voti a cuori
+separati**, uno per ciascuno. Sui posti già provati c'è un contatore: **quante
+volte ci siamo tornati**, che sale con un tocco.
 
 ### 🎡 Uscite & Avventure
 Mirabilandia, concerti, mostre, gite. Da fare e fatte, con foto e voti.
@@ -66,13 +68,30 @@ Mirabilandia, concerti, mostre, gite. Da fare e fatte, con foto e voti.
 La watchlist condivisa: da vedere e visti, film o serie, con i voti di entrambi.
 
 ### 🏆 Achievement
-25 traguardi di partenza. Alcuni **si sbloccano da soli** contando i vostri dati
-(anniversari da 1 a 10 anni, primo viaggio, 10 posti provati, 20 tappe
-percorse...), altri li spuntate voi quando succedono. E potete inventarne di
-nuovi.
+Divisi in due.
 
-Quando ne scatta uno arriva il pop-up con coriandoli, una frase a sorpresa e una
-foto dalla vostra galleria.
+**Le scale** sono i traguardi che non finiscono mai: anni insieme, viaggi,
+posti provati, film e serie, uscite, esami passati. Ognuna è un riquadro solo
+che dice a che punto siamo e quanto manca al prossimo scalino, e cresce da
+sola — messa la data dell'anniversario, il livello giusto si sblocca subito e
+il successivo arriverà l'anno prossimo. Le frasi di ogni scalino le scriviamo
+noi dalle Impostazioni, una per riga.
+
+**Una volta sola** sono quelli che scattano e basta: il primo giapponese
+provato (🍣 *Primo sushi*), il dizionario di coppia, l'archivio ricordi, più
+quelli da spuntare a mano — e ne possiamo inventare altri.
+
+Quando ne scatta uno arriva il pop-up con coriandoli, la frase del momento e
+una foto dalla nostra galleria.
+
+### 📌 Impegni
+Chiunque dei due scrive un impegno con data e ora, e l'altro lo vede sul
+calendario. La sezione **Impegni** li mette in fila — in arrivo e già passati —
+con la firma di chi li ha messi.
+
+Gli impegni che hanno **"esame"** nel titolo sono speciali: passata la data
+l'app chiede com'è andata, si può rispondere o rimandare di tre giorni, e ogni
+esame passato fa salire la scala **Genietto**.
 
 ### ➕ Categorie vostre
 Il pulsante al centro della barra crea categorie nuove: concerti, regali,
@@ -93,13 +112,17 @@ sei pixel del calendario:
 
 | | Categoria | Colore |
 |---|---|---|
-| 🌸 | Impegni | rosa `#E8638C` |
+| 🌟 | Impegni, e colore dell'app | giallo `#F5B301` |
 | ✈️ | Viaggi | blu `#2E7DD1` |
 | 🍝 | Ristoranti & Bar | arancio `#E8833A` |
-| 🏆 | Achievement | oro `#F0B429` |
+| 🏆 | Achievement | rosa `#E8638C` |
 | 🎡 | Uscite & Avventure | turchese `#17A398` |
 | 🎬 | Cinema & Serie | viola `#8B5CF6` |
-| ❤️ | Categorie vostre | rosso `#A6192E` |
+| ❤️ | Categorie nostre | rosso `#A6192E` |
+
+Ogni tinta porta con sé il colore del testo da scriverci sopra: sul giallo il
+bianco non si legge, quindi lì va un marrone scuro. È il motivo per cui la
+palette non è solo una lista di sfondi.
 
 ---
 
@@ -116,9 +139,10 @@ sei pixel del calendario:
 ```
 src/
 ├── lib/          modello dati, colori, date, calendario, achievement
-│   ├── db.ts     il layer di persistenza: cloud Supabase o locale
-│   ├── copy.ts   le frasi riscrivibili dalle Impostazioni
-│   ├── geo.ts    ricerca dei posti e distanze
+│   ├── db.ts      il layer di persistenza: cloud Supabase o locale
+│   ├── copy.ts    le frasi riscrivibili dalle Impostazioni
+│   ├── ladders.ts i traguardi a livelli, e le loro soglie
+│   ├── geo.ts     ricerca dei posti e distanze
 │   └── wanderlog.ts  lettura di KML, KMZ, GPX e CSV
 ├── store/        stato dell'app (AppStore) e accesso (AuthContext)
 ├── components/   pannelli, form, foto, animazioni, pop-up

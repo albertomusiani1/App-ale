@@ -58,10 +58,10 @@ export function CalendarPage() {
   return (
     <div className="pb-4">
       {/* Intestazione con il contatore della relazione */}
-      <div className="relative mb-4 overflow-hidden rounded-3xl bg-gradient-to-br from-cat-agenda to-[#C14C77] px-5 py-4 text-white shadow-lift">
+      <div className="relative mb-4 overflow-hidden rounded-3xl bg-gradient-to-br from-[#FFC93C] to-[#E09600] px-5 py-4 text-[#3D2B00] shadow-lift">
         <Glitter count={14} seed={11} />
         <div className="relative">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] opacity-80">{t('home.eyebrow')}</p>
+          <p className="text-xs font-bold uppercase tracking-[0.2em] opacity-70">{t('home.eyebrow')}</p>
           <p className="font-display text-2xl font-bold leading-tight">
             {data.settings.nameA} &amp; {data.settings.nameB}
           </p>
@@ -99,7 +99,7 @@ export function CalendarPage() {
               setMonth(new Date())
               setSelected(todayISO())
             }}
-            className="text-xs font-semibold text-cat-agenda"
+            className="text-xs font-semibold text-[#7A5600]"
           >
             {t('home.today')}
           </button>
@@ -147,7 +147,7 @@ export function CalendarPage() {
                 >
                   <span
                     className={`flex h-7 w-7 items-center justify-center rounded-full text-sm ${
-                      isToday(day) ? 'bg-cat-agenda font-bold text-white' : isSelected ? 'font-bold' : ''
+                      isToday(day) ? 'bg-cat-agenda font-bold text-[#3D2B00]' : isSelected ? 'font-bold' : ''
                     }`}
                   >
                     {day.getDate()}
@@ -178,7 +178,7 @@ export function CalendarPage() {
           <h2 className="font-display text-lg font-bold">{longDate(selected)}</h2>
           <button
             onClick={() => setAdding(true)}
-            className="rounded-full bg-cat-agenda/10 px-3 py-1.5 text-sm font-semibold text-cat-agenda active:scale-95"
+            className="rounded-full bg-cat-agenda/10 px-3 py-1.5 text-sm font-semibold text-[#7A5600] active:scale-95"
           >
             ＋ Impegno
           </button>

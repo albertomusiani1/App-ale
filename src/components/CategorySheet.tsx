@@ -57,8 +57,8 @@ export function CategorySheet({
               onClose()
             }}
             disabled={!canSave}
-            className="btn flex-[2] text-white shadow-lift"
-            style={{ background: colorOf(draft.color).hex }}
+            className="btn flex-[2] shadow-lift"
+            style={{ background: colorOf(draft.color).hex, color: colorOf(draft.color).on }}
           >
             {category ? 'Salva' : 'Crea'}
           </button>

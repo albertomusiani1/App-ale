@@ -22,12 +22,18 @@ export function SayingBubble() {
       // Resta a galla qualche secondo e poi se ne va da sola.
       window.setTimeout(() => setIndex(null), 7000)
     }
-    // Il primo passa dopo un minuto, per non aggredire chi ha appena aperto l'app.
-    const first = window.setTimeout(show, Math.min(60_000, everyMs))
-    const timer = window.setInterval(show, everyMs)
+    // Il primo arriva presto, fra i 25 e i 30 secondi dall'apertura: abbastanza
+    // per non sovrapporsi al caricamento, abbastanza poco da farsi notare.
+    // Da lì in poi comanda il tempo scelto nelle impostazioni.
+    const firstDelay = 25_000 + Math.random() * 5_000
+    let interval = 0
+    const first = window.setTimeout(() => {
+      show()
+      interval = window.setInterval(show, everyMs)
+    }, firstDelay)
     return () => {
       window.clearTimeout(first)
-      window.clearInterval(timer)
+      if (interval) window.clearInterval(interval)
     }
   }, [settings.sayingFrequency, sayings.length])
 
@@ -47,7 +53,7 @@ export function SayingBubble() {
           className="fixed inset-x-4 z-40 mx-auto max-w-sm rounded-3xl bg-white px-5 py-4 text-left shadow-lift ring-1 ring-black/5"
           style={{ bottom: 'calc(96px + var(--safe-bottom))' }}
         >
-          <span className="mb-1 block text-[11px] font-bold uppercase tracking-widest text-cat-agenda">
+          <span className="mb-1 block text-[11px] font-bold uppercase tracking-widest text-[#7A5600]">
             {t('saying.eyebrow')}
           </span>
           <p className="font-display text-lg font-semibold leading-snug">"{saying.text}"</p>

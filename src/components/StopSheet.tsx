@@ -64,8 +64,8 @@ export function StopSheet({
               onClose()
             }}
             disabled={!canSave}
-            className="btn flex-[2] text-white shadow-lift"
-            style={{ background: c.hex }}
+            className="btn flex-[2] shadow-lift"
+            style={{ background: c.hex, color: c.on }}
           >
             {stop ? 'Salva' : 'Aggiungi'}
           </button>

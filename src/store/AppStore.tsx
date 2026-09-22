@@ -10,7 +10,9 @@ import {
 } from 'react'
 import { backend, emptyDataset, type Dataset, type TableName } from '../lib/db'
 import { newlyUnlocked } from '../lib/achievements'
-import { makeTranslate, type Translate } from '../lib/copy'
+import { makeTranslate, phraseForLevel, type Translate } from '../lib/copy'
+import { LADDERS, ladderCounts, levelFromCount } from '../lib/ladders'
+import { todayISO } from '../lib/dates'
 import { rememberBrand } from '../lib/brand'
 import { randomId } from '../lib/image'
 import {
@@ -24,7 +26,9 @@ import type {
   CalEvent,
   Category,
   ColorKey,
+  ExamOutcome,
   Item,
+  LadderState,
   Photo,
   PhotoScope,
   Quote,
@@ -66,6 +70,12 @@ interface AppValue {
   deleteCategory: (id: string) => Promise<void>
   saveAchievement: (achievement: Achievement) => Promise<void>
   deleteAchievement: (id: string) => Promise<void>
+  /** L'esame passato o no: chiude la domanda che compare a data scaduta. */
+  answerExam: (eventId: string, outcome: Exclude<ExamOutcome, null>) => Promise<void>
+  /** "Ne parliamo fra tre giorni." */
+  snoozeExam: (eventId: string) => Promise<void>
+  /** L'esame di cui l'app sta aspettando l'esito, se ce n'è uno. */
+  pendingExam: CalEvent | null
   saveSaying: (saying: Saying) => Promise<void>
   deleteSaying: (id: string) => Promise<void>
   saveQuote: (quote: Quote) => Promise<void>
@@ -294,6 +304,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       write('achievements', a, (d) => ({ ...d, achievements: upsertIn(d.achievements, a) })),
     [write],
   )
+  const saveLadder = useCallback(
+    (l: LadderState) => write('ladders', l, (d) => ({ ...d, ladders: upsertIn(d.ladders, l) })),
+    [write],
+  )
   const deleteAchievement = useCallback(
     (id: string) =>
       erase('achievements', id, (d) => ({ ...d, achievements: d.achievements.filter((a) => a.id !== id) })),
@@ -350,6 +364,46 @@ export function AppProvider({ children }: { children: ReactNode }) {
     await backend.removePhoto(photo).catch(() => undefined)
   }, [])
 
+  /* ---------------- esami ---------------- */
+
+  /**
+   * Un impegno che ha "esame" nel titolo diventa un esame: passata la data,
+   * l'app chiede com'è andata. Se rimandiamo, non torna a chiedere prima di
+   * tre giorni.
+   */
+  const pendingExam = useMemo(() => {
+    const today = todayISO()
+    return (
+      data.events.find(
+        (e) =>
+          /esame/i.test(e.title) &&
+          e.examOutcome === null &&
+          (e.endDate ?? e.date) < today &&
+          (!e.examAskAfter || e.examAskAfter <= today),
+      ) ?? null
+    )
+  }, [data.events])
+
+  const answerExam = useCallback(
+    async (eventId: string, outcome: Exclude<ExamOutcome, null>) => {
+      const event = data.events.find((e) => e.id === eventId)
+      if (!event) return
+      await saveEvent({ ...event, examOutcome: outcome, examAskAfter: null })
+    },
+    [data.events, saveEvent],
+  )
+
+  const snoozeExam = useCallback(
+    async (eventId: string) => {
+      const event = data.events.find((e) => e.id === eventId)
+      if (!event) return
+      const in3days = new Date()
+      in3days.setDate(in3days.getDate() + 3)
+      await saveEvent({ ...event, examAskAfter: in3days.toISOString().slice(0, 10) })
+    },
+    [data.events, saveEvent],
+  )
+
   /* ---------------- celebrazioni automatiche ---------------- */
 
   /** Cambia solo quando riscrivete una frase, non a ogni render. */
@@ -370,6 +424,31 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const celebrate = useCallback((c: Celebration) => setCelebration(c), [])
   const dismissCelebration = useCallback(() => setCelebration(null), [])
 
+  // Le scale: quando il conteggio supera lo scalino successivo si sale di
+  // livello e si festeggia, con la frase scritta da noi per quel livello.
+  useEffect(() => {
+    if (loading) return
+    const counts = ladderCounts(data)
+    for (const ladder of LADDERS) {
+      const reached = levelFromCount(ladder, counts[ladder.source] ?? 0)
+      const stored = data.ladders.find((l) => l.id === ladder.key)?.level ?? 0
+      if (reached <= stored) continue
+      void saveLadder({ id: ladder.key, level: reached, unlockedAt: new Date().toISOString() })
+      const phrase = phraseForLevel(t, ladder.phrases, reached)
+      const gallery = data.photos.filter((p) => p.scope === 'taylor')
+      setCelebration({
+        title: `${ladder.title}: ${counts[ladder.source] ?? 0}`,
+        subtitle: `Scalino numero ${reached}.`,
+        emoji: ladder.emoji,
+        color: ladder.color,
+        quote: phrase ? { id: ladder.key, text: phrase, song: '', era: '', createdAt: '' } : undefined,
+        photoUrl: gallery.length ? gallery[Math.floor(Math.random() * gallery.length)].url : undefined,
+      })
+      // Un traguardo per volta: gli altri arriveranno al prossimo giro.
+      return
+    }
+  }, [data, loading, saveLadder, t])
+
   useEffect(() => {
     if (loading) return
     const ids = newlyUnlocked(data)
@@ -383,15 +462,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (a) void saveAchievement({ ...a, unlockedAt: now })
     })
     const gallery = data.photos.filter((p) => p.scope === 'taylor')
+    // Il primo sushi ha una frase sua, scritta da noi nelle impostazioni.
+    const sushiPhrase = first.id === 'ach-sushi' ? t('achievement.sushi') : ''
     setCelebration({
       title: first.title,
       subtitle: first.description,
       emoji: first.emoji,
       color: 'goals',
-      quote: data.quotes.length ? data.quotes[Math.floor(Math.random() * data.quotes.length)] : undefined,
+      quote: sushiPhrase
+        ? { id: 'sushi', text: sushiPhrase, song: '', era: '', createdAt: '' }
+        : data.quotes.length
+          ? data.quotes[Math.floor(Math.random() * data.quotes.length)]
+          : undefined,
       photoUrl: gallery.length ? gallery[Math.floor(Math.random() * gallery.length)].url : undefined,
     })
-  }, [data, loading, saveAchievement])
+  }, [data, loading, saveAchievement, t])
 
   const value = useMemo<AppValue>(
     () => ({
@@ -411,6 +496,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       deleteCategory,
       saveAchievement,
       deleteAchievement,
+      answerExam,
+      snoozeExam,
+      pendingExam,
       saveSaying,
       deleteSaying,
       saveQuote,
@@ -426,6 +514,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [
       data, loading, error, t, saveItem, deleteItem, saveStop, deleteStop, saveStopDay,
       saveEvent, deleteEvent, saveCategory, deleteCategory, saveAchievement, deleteAchievement,
+      answerExam, snoozeExam, pendingExam,
       saveSaying, deleteSaying, saveQuote, deleteQuote, updateSettings, addPhoto, deletePhoto,
       celebration, celebrate, dismissCelebration, load,
     ],

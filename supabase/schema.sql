@@ -31,6 +31,7 @@ create table if not exists public.items (
   cover_photo_id text,
   lat            double precision,
   lng            double precision,
+  visits         integer not null default 0,
   created_at     timestamptz not null default now()
 );
 create index if not exists items_category_idx on public.items(category_id);
@@ -79,6 +80,9 @@ create table if not exists public.events (
   time       text,
   notes      text not null default '',
   color      text not null default 'agenda',
+  author     text,
+  exam_outcome   text,
+  exam_ask_after date,
   created_at timestamptz not null default now()
 );
 create index if not exists events_date_idx on public.events(date);
@@ -95,7 +99,14 @@ create table if not exists public.achievements (
   custom      boolean not null default false
 );
 
--- I vostri modi di dire.
+-- I traguardi che si ripetono: una riga per scala, con il livello raggiunto.
+create table if not exists public.ladders (
+  id          text primary key,
+  level       smallint not null default 0,
+  unlocked_at timestamptz
+);
+
+-- I nostri modi di dire.
 create table if not exists public.sayings (
   id         text primary key,
   text       text not null default '',
@@ -137,6 +148,32 @@ alter table public.stops    add column if not exists lat double precision;
 alter table public.stops    add column if not exists lng double precision;
 alter table public.settings add column if not exists app_name text not null default 'LoviDovi';
 alter table public.settings add column if not exists texts jsonb not null default '{}'::jsonb;
+alter table public.items    add column if not exists visits integer not null default 0;
+alter table public.events   add column if not exists author text;
+alter table public.events   add column if not exists exam_outcome text;
+alter table public.events   add column if not exists exam_ask_after date;
+
+-- I traguardi numerati (1, 5, 10 viaggi...) sono diventati "scale" a livelli,
+-- che crescono da sole: le vecchie schede non servono più. Tocchiamo solo
+-- quelle di partenza, mai quelle inventate da noi (custom = true).
+delete from public.achievements
+where custom = false
+  and id in (
+    'ach-anniv-1','ach-anniv-2','ach-anniv-3','ach-anniv-4','ach-anniv-5',
+    'ach-anniv-6','ach-anniv-7','ach-anniv-8','ach-anniv-9','ach-anniv-10',
+    'ach-trip-1','ach-trip-5','ach-trip-10','ach-stops-20',
+    'ach-place-1','ach-place-10','ach-place-25',
+    'ach-out-5','ach-out-15','ach-screen-10',
+    'ach-m-plant'
+  );
+
+-- E i nuovi entrano, senza toccare quelli già sbloccati.
+insert into public.achievements (id, key, title, description, emoji, kind, target, custom) values
+  ('ach-sushi','sushi','Primo sushi','Il primo giapponese da quando esiste questa app.','🍣','auto',1,false),
+  ('ach-m-finalmente','manual','Finalmente','Alessia ha cagato con la porta chiusa.','🚪','manual',1,false),
+  ('ach-m-bisu','manual','Bisu','Alessia ha dato 10 baci ad Albi.','😘','manual',1,false),
+  ('ach-m-chonky','manual','Chonky Chonky','Albi ha toccato la panciotta almeno 10 volte.','🐻','manual',1,false)
+on conflict (id) do nothing;
 
 -- --------------------------------------------------------------- sicurezza --
 -- Row Level Security: senza login non si legge e non si scrive niente.
@@ -147,7 +184,7 @@ declare t text;
 begin
   foreach t in array array[
     'categories','items','stops','stop_days','photos',
-    'events','achievements','sayings','quotes','settings'
+    'events','achievements','ladders','sayings','quotes','settings'
   ]
   loop
     execute format('alter table public.%I enable row level security', t);
@@ -166,7 +203,7 @@ declare t text;
 begin
   foreach t in array array[
     'categories','items','stops','stop_days','photos',
-    'events','achievements','sayings','quotes','settings'
+    'events','achievements','ladders','sayings','quotes','settings'
   ]
   loop
     begin
@@ -202,4 +239,4 @@ create policy "coppia_foto_modifica" on storage.objects
 create policy "coppia_foto_rimozione" on storage.objects
   for delete to authenticated using (bucket_id = 'photos');
 
--- Fatto. Torna sull'app e fai login con la password del vostro account. 💗
+-- Fatto. Torniamo sull'app e facciamo login con la password del nostro account. 💗

@@ -8,15 +8,15 @@ export default {
         sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
       },
       colors: {
-        cream: '#FFF7FA',
+        cream: '#FFFCF3',
         ink: '#2B1F26',
         muted: '#7A6A72',
         // Una tinta per categoria: riconoscibile a colpo d'occhio sul calendario
         cat: {
-          agenda: '#E8638C',   // rosa    - impegni e appuntamenti
+          agenda: '#F5B301',   // giallo  - il colore dell'app, impegni e appuntamenti
           trips: '#2E7DD1',    // blu     - viaggi
           places: '#E8833A',   // arancio - ristoranti e bar
-          goals: '#F0B429',    // oro     - achievement
+          goals: '#E8638C',    // rosa    - achievement
           outings: '#17A398',  // turchese- uscite e avventure
           screen: '#8B5CF6',   // viola   - cinema e serie
           custom: '#A6192E',   // rosso   - categorie create da voi

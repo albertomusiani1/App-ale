@@ -93,7 +93,7 @@ export function StatusPill({ status, color }: { status: ItemStatus; color: Color
       className="pill"
       style={
         filled
-          ? { background: c.hex, color: '#fff' }
+          ? { background: c.hex, color: c.on }
           : { background: c.soft, color: c.ink, opacity: status === 'wish' ? 0.85 : 1 }
       }
     >
@@ -124,7 +124,7 @@ export function StatusPicker({
           className="flex-1 rounded-2xl border px-2 py-2.5 text-sm font-semibold transition active:scale-95"
           style={
             value === s
-              ? { background: c.hex, color: '#fff', borderColor: c.hex }
+              ? { background: c.hex, color: c.on, borderColor: c.hex }
               : { background: '#fff', color: c.ink, borderColor: 'rgba(0,0,0,0.08)' }
           }
         >

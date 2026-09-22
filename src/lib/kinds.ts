@@ -23,6 +23,10 @@ export interface KindCopy {
   /** Valori suggeriti per `meta.type` (es. ristorante / bar). */
   types?: string[]
   typeLabel?: string
+  /** Valori suggeriti per `meta.cuisine`: solo i posti dove si mangia. */
+  cuisines?: string[]
+  /** Se true la scheda tiene il conto di quante volte ci siamo tornati. */
+  counted?: boolean
 }
 
 export const KIND_COPY: Record<CategoryKind, KindCopy> = {
@@ -53,6 +57,21 @@ export const KIND_COPY: Record<CategoryKind, KindCopy> = {
     rated: true,
     typeLabel: 'Che posto è',
     types: ['Ristorante', 'Pizzeria', 'Bar', 'Cocktail bar', 'Gelateria', 'Pasticceria', 'Street food', 'Altro'],
+    cuisines: [
+      'Giapponese',
+      'Italiana',
+      'Cinese',
+      'Indiana',
+      'Messicana',
+      'Coreana',
+      'Thai',
+      'Pesce',
+      'Carne',
+      'Vegetariana',
+      'Fusion',
+      'Altro',
+    ],
+    counted: true,
   },
   screen: {
     one: 'titolo',
