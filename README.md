@@ -75,7 +75,9 @@ posti provati, film e serie, uscite, esami passati. Ognuna è un riquadro solo
 che dice a che punto siamo e quanto manca al prossimo scalino, e cresce da
 sola — messa la data dell'anniversario, il livello giusto si sblocca subito e
 il successivo arriverà l'anno prossimo. Le frasi di ogni scalino le scriviamo
-noi dalle Impostazioni, una per riga.
+noi dalle Impostazioni: una per riga per i primi traguardi, più una **frase
+sempre valida** con il numero dentro (*"Minchia, siamo stati insieme {anni}
+anni"*) che copre tutti gli scalini successivi, all'infinito.
 
 **Una volta sola** sono quelli che scattano e basta: il primo giapponese
 provato (🍣 *Primo sushi*), il dizionario di coppia, l'archivio ricordi, più

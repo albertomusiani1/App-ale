@@ -24,7 +24,10 @@ export interface CopyField {
 }
 
 const LADDER_HINT =
-  'Una frase per riga: la prima vale per il primo traguardo, la seconda per il secondo e così via. Finite le righe si ricomincia da capo.'
+  'Una frase per riga: la prima vale per il primo scalino, la seconda per il secondo e così via. Finite le righe entra in gioco la frase sempre valida qui sotto.'
+
+const LADDER_STD_HINT =
+  'Usata per tutti gli scalini che non hanno una riga dedicata qui sopra. Svuota l elenco sopra per usare sempre e solo questa.'
 
 export const COPY_FIELDS: CopyField[] = [
   // --- Accesso
@@ -56,12 +59,18 @@ export const COPY_FIELDS: CopyField[] = [
   { key: 'achievements.hint', label: 'Istruzioni sotto i traguardi', group: 'Celebrazioni', long: true },
 
   // --- Le frasi dei traguardi a livelli
-  { key: 'ladder.anniversary', label: 'Anni insieme', group: 'Frasi dei traguardi', long: true, hint: LADDER_HINT },
-  { key: 'ladder.trips', label: 'Viaggi fatti', group: 'Frasi dei traguardi', long: true, hint: LADDER_HINT },
-  { key: 'ladder.places', label: 'Posti provati', group: 'Frasi dei traguardi', long: true, hint: LADDER_HINT },
-  { key: 'ladder.screen', label: 'Film e serie finiti', group: 'Frasi dei traguardi', long: true, hint: LADDER_HINT },
-  { key: 'ladder.outings', label: 'Uscite fatte', group: 'Frasi dei traguardi', long: true, hint: LADDER_HINT },
-  { key: 'ladder.exams', label: 'Esami passati', group: 'Frasi dei traguardi', long: true, hint: LADDER_HINT },
+  { key: 'ladder.anniversary', label: 'Anni insieme · una per scalino', group: 'Frasi dei traguardi', long: true, hint: LADDER_HINT, slots: ['{anni}'] },
+  { key: 'ladder.anniversary.default', label: 'Anni insieme · frase sempre valida', group: 'Frasi dei traguardi', hint: LADDER_STD_HINT, slots: ['{anni}'] },
+  { key: 'ladder.trips', label: 'Viaggi fatti · una per scalino', group: 'Frasi dei traguardi', long: true, hint: LADDER_HINT, slots: ['{viaggi}'] },
+  { key: 'ladder.trips.default', label: 'Viaggi fatti · frase sempre valida', group: 'Frasi dei traguardi', hint: LADDER_STD_HINT, slots: ['{viaggi}'] },
+  { key: 'ladder.places', label: 'Posti provati · una per scalino', group: 'Frasi dei traguardi', long: true, hint: LADDER_HINT, slots: ['{posti}'] },
+  { key: 'ladder.places.default', label: 'Posti provati · frase sempre valida', group: 'Frasi dei traguardi', hint: LADDER_STD_HINT, slots: ['{posti}'] },
+  { key: 'ladder.screen', label: 'Film e serie · una per scalino', group: 'Frasi dei traguardi', long: true, hint: LADDER_HINT, slots: ['{titoli}'] },
+  { key: 'ladder.screen.default', label: 'Film e serie · frase sempre valida', group: 'Frasi dei traguardi', hint: LADDER_STD_HINT, slots: ['{titoli}'] },
+  { key: 'ladder.outings', label: 'Uscite fatte · una per scalino', group: 'Frasi dei traguardi', long: true, hint: LADDER_HINT, slots: ['{uscite}'] },
+  { key: 'ladder.outings.default', label: 'Uscite fatte · frase sempre valida', group: 'Frasi dei traguardi', hint: LADDER_STD_HINT, slots: ['{uscite}'] },
+  { key: 'ladder.exams', label: 'Esami passati · una per scalino', group: 'Frasi dei traguardi', long: true, hint: LADDER_HINT, slots: ['{esami}'] },
+  { key: 'ladder.exams.default', label: 'Esami passati · frase sempre valida', group: 'Frasi dei traguardi', hint: LADDER_STD_HINT, slots: ['{esami}'] },
   { key: 'achievement.sushi', label: 'Frase del primo sushi', group: 'Frasi dei traguardi' },
 
   // --- Esami
@@ -135,6 +144,12 @@ export const DEFAULT_COPY: Record<string, string> = {
   'ladder.screen': 'Finita la prima serie, ne servono altre venti.\nUna maratona tira l altra.\nAbbiamo visto tutto, ricominciamo da capo.',
   'ladder.outings': 'Prima uscita di quelle vere.\nNon stiamo mai fermi.\nSiamo ufficialmente instancabili.',
   'ladder.exams': 'Primo esame passato, si brinda.\nUn altro giù, ne mancano sempre meno.\nA questo punto la laurea è una formalità.',
+  'ladder.anniversary.default': 'Minchia, siamo stati insieme {anni} anni.',
+  'ladder.trips.default': 'Siamo a {viaggi} viaggi insieme. Prossima valigia?',
+  'ladder.places.default': '{posti} posti provati. Il conto in banca piange.',
+  'ladder.screen.default': '{titoli} fra film e serie. Il divano ci ringrazia.',
+  'ladder.outings.default': '{uscite} uscite e non ci fermiamo più.',
+  'ladder.exams.default': '{esami} esami passati. Genietto vero.',
   'achievement.sushi': 'Tanto paga sempre Albi',
 
   'exam.question': 'Com è andato l esame?',
@@ -195,14 +210,39 @@ export function makeTranslate(texts: Record<string, string>): Translate {
 }
 
 /**
- * Le frasi a livelli sono scritte una per riga. Il livello 1 prende la prima,
- * e quando le righe finiscono si ricomincia da capo invece di restare muti.
+ * La frase da mostrare quando si sale di uno scalino.
+ *
+ * L'ordine è: la riga scritta apposta per quello scalino, se c'è; altrimenti
+ * la frase sempre valida, quella con il numero dentro ({anni}, {viaggi}...).
+ * Così si possono scrivere due o tre battute per i primi traguardi e lasciare
+ * che dal quarto in poi ci pensi una frase sola, senza doverle inventare
+ * all'infinito.
  */
-export function phraseForLevel(t: Translate, key: string, level: number): string {
+export function phraseForLevel(
+  t: Translate,
+  key: string,
+  level: number,
+  slots?: Record<string, string | number>,
+): string {
   const lines = t(key)
     .split('\n')
     .map((l) => l.trim())
     .filter(Boolean)
-  if (lines.length === 0) return ''
-  return lines[(Math.max(1, level) - 1) % lines.length]
+  const specific = lines[Math.max(1, level) - 1]
+  if (specific) return fill(specific, slots)
+
+  const standard = t(`${key}.default`)
+  // `t` restituisce la chiave stessa quando non trova niente: in quel caso
+  // non c'è davvero una frase sempre valida, e si torna a ciclare le righe.
+  if (standard && standard !== `${key}.default`) return fill(standard, slots)
+
+  return lines.length ? fill(lines[(Math.max(1, level) - 1) % lines.length], slots) : ''
+}
+
+function fill(text: string, slots?: Record<string, string | number>): string {
+  if (!slots) return text
+  return Object.entries(slots).reduce(
+    (out, [name, value]) => out.replaceAll(`{${name}}`, String(value)),
+    text,
+  )
 }

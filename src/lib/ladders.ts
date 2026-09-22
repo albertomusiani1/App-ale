@@ -1,4 +1,5 @@
 import type { ColorKey } from '../types'
+import { phraseForLevel, type Translate } from './copy'
 import type { Dataset } from './db'
 import { CAT } from './seed'
 import { yearsSince } from './dates'
@@ -154,4 +155,25 @@ export function ladderCounts(data: Dataset, now = new Date()): Record<string, nu
     outingsDone: done(CAT.outings),
     exams: data.events.filter((e) => e.examOutcome === 'passed').length,
   }
+}
+
+/**
+ * La frase da mostrare quando una scala sale di livello.
+ *
+ * I segnaposto disponibili sono tre: `{n}` vale ovunque, `{livello}` è lo
+ * scalino, e poi c'è quello con il nome dell'unità della scala — `{anni}`
+ * per gli anni insieme, `{viaggi}` per i viaggi e così via — che è quello
+ * che viene naturale scrivere.
+ */
+export function ladderPhrase(
+  t: Translate,
+  ladder: Ladder,
+  level: number,
+  count: number,
+): string {
+  return phraseForLevel(t, ladder.phrases, level, {
+    n: count,
+    livello: level,
+    [ladder.unit]: count,
+  })
 }

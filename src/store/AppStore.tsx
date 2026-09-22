@@ -10,8 +10,8 @@ import {
 } from 'react'
 import { backend, emptyDataset, type Dataset, type TableName } from '../lib/db'
 import { newlyUnlocked } from '../lib/achievements'
-import { makeTranslate, phraseForLevel, type Translate } from '../lib/copy'
-import { LADDERS, ladderCounts, levelFromCount } from '../lib/ladders'
+import { makeTranslate, type Translate } from '../lib/copy'
+import { LADDERS, ladderCounts, ladderPhrase, levelFromCount } from '../lib/ladders'
 import { todayISO } from '../lib/dates'
 import { rememberBrand } from '../lib/brand'
 import { randomId } from '../lib/image'
@@ -434,10 +434,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const stored = data.ladders.find((l) => l.id === ladder.key)?.level ?? 0
       if (reached <= stored) continue
       void saveLadder({ id: ladder.key, level: reached, unlockedAt: new Date().toISOString() })
-      const phrase = phraseForLevel(t, ladder.phrases, reached)
+      const count = counts[ladder.source] ?? 0
+      const phrase = ladderPhrase(t, ladder, reached, count)
       const gallery = data.photos.filter((p) => p.scope === 'taylor')
       setCelebration({
-        title: `${ladder.title}: ${counts[ladder.source] ?? 0}`,
+        title: `${ladder.title}: ${count}`,
         subtitle: `Scalino numero ${reached}.`,
         emoji: ladder.emoji,
         color: ladder.color,
