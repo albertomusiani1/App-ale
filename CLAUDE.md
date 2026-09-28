@@ -38,3 +38,6 @@ senza doverlo ripescare.
   Impostazioni; i pulsanti e le etichette dei campi restano fuori di proposito.
 - La palette porta anche il colore del testo da scrivere sopra ogni tinta
   (`on`): sul giallo il bianco non si legge.
+- La presentazione di benvenuto parte solo per la persona `b` e solo la prima
+  volta su quel telefono: il segno sta in localStorage, non nel database, così
+  non serve una migrazione per una cosa che riguarda il primo avvio.

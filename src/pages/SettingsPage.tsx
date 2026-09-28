@@ -8,6 +8,7 @@ import { plural, yearsSince } from '../lib/dates'
 import { PhotoGrid } from '../components/Photos'
 import { Sheet } from '../components/Sheet'
 import { COPY_FIELDS, COPY_GROUPS, DEFAULT_COPY } from '../lib/copy'
+import { forgetWelcome, requestWelcome } from '../lib/welcome'
 import { Field, FieldGroup, Input, PageTitle, TextArea } from '../components/ui'
 import type { Quote, Saying } from '../types'
 
@@ -174,6 +175,17 @@ export function SettingsPage() {
             </div>
           ))}
         </dl>
+        <button
+          onClick={() => {
+            forgetWelcome('b')
+            requestWelcome()
+            window.location.href = '/'
+          }}
+          className="btn-ghost w-full"
+        >
+          💛 Rivedi la presentazione
+        </button>
+
         {mode === 'cloud' && (
           <button onClick={() => void signOut()} className="btn-ghost w-full">
             Esci

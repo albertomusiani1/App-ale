@@ -49,6 +49,18 @@ Se usate già **Wanderlog**, non si ricomincia da capo: esportate il viaggio in
 un viaggio con le sue tappe; altrove diventa una scheda per ogni posto.
 Funziona anche con gli export di Google My Maps, che usano gli stessi formati.
 
+### 💛 La prima volta
+Quando lei entra per la prima volta su un telefono, l'app non la lascia davanti
+a un calendario vuoto: le fa otto domande e si riempie mentre risponde — da
+quando stiamo insieme, il primo viaggio, il primo sushi, cosa guardiamo, la
+prossima avventura, una frase che ci rappresenta, il primo modo di dire — e
+finisce con una presentazione di cosa c'è dentro.
+
+Ogni risposta finisce dove finirebbe passando dai form normali, quindi non c'è
+un percorso speciale da mantenere. Tutte le domande si possono saltare. Si
+rivede da **Impostazioni → Rivedi la presentazione**, che serve anche a
+provarla prima di regalare l'app.
+
 ### 💬 Le nostre parole
 Il nome dell'app e una cinquantina di frasi — le celebrazioni, i messaggi delle
 liste vuote, i titoli, le battute di ogni scalino dei traguardi — si riscrivono
