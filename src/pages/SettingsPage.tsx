@@ -8,7 +8,7 @@ import { plural, yearsSince } from '../lib/dates'
 import { PhotoGrid } from '../components/Photos'
 import { Sheet } from '../components/Sheet'
 import { COPY_FIELDS, COPY_GROUPS, DEFAULT_COPY } from '../lib/copy'
-import { forgetWelcome, requestWelcome } from '../lib/welcome'
+import { forgetWelcome, requestWelcome, welcomeTarget, withWelcomeTarget } from '../lib/welcome'
 import { Field, FieldGroup, Input, PageTitle, TextArea } from '../components/ui'
 import type { Quote, Saying } from '../types'
 
@@ -75,6 +75,40 @@ export function SettingsPage() {
             onChange={(e) => void updateSettings({ anniversary: e.target.value || null })}
           />
         </Field>
+
+        <FieldGroup
+          label="La presentazione di benvenuto è per"
+          hint="La prima volta che questa persona entra, l app le fa qualche domanda e si riempie mentre risponde. All altro non compare."
+        >
+          <div className="flex gap-2">
+            {(['a', 'b'] as const).map((p) => {
+              const attivo = welcomeTarget(settings.texts) === p
+              return (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => {
+                    void updateSettings({ texts: withWelcomeTarget(settings.texts, p) })
+                    // Chi la deve vedere non l ha ancora vista.
+                    forgetWelcome(p)
+                  }}
+                  className="flex-1 rounded-2xl border px-3 py-3 font-semibold transition active:scale-95"
+                  style={
+                    attivo
+                      ? {
+                          background: colorOf('agenda').hex,
+                          color: colorOf('agenda').on,
+                          borderColor: colorOf('agenda').hex,
+                        }
+                      : { background: '#fff', borderColor: 'rgba(0,0,0,0.08)' }
+                  }
+                >
+                  💛 {p === 'a' ? settings.nameA : settings.nameB}
+                </button>
+              )
+            })}
+          </div>
+        </FieldGroup>
 
         <FieldGroup label="Chi sta usando questo telefono" hint="Serve solo a capire di chi è ogni voto.">
           <div className="flex gap-2">
@@ -177,7 +211,7 @@ export function SettingsPage() {
         </dl>
         <button
           onClick={() => {
-            forgetWelcome('b')
+            forgetWelcome(welcomeTarget(settings.texts))
             requestWelcome()
             window.location.href = '/'
           }}

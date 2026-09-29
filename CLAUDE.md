@@ -38,6 +38,8 @@ senza doverlo ripescare.
   Impostazioni; i pulsanti e le etichette dei campi restano fuori di proposito.
 - La palette porta anche il colore del testo da scrivere sopra ogni tinta
   (`on`): sul giallo il bianco non si legge.
-- La presentazione di benvenuto parte solo per la persona `b` e solo la prima
-  volta su quel telefono: il segno sta in localStorage, non nel database, così
-  non serve una migrazione per una cosa che riguarda il primo avvio.
+- La presentazione di benvenuto parte per la persona scelta in
+  **Impostazioni → Noi due → La presentazione di benvenuto è per**, e solo la
+  prima volta su quel telefono. La scelta sta in `settings.texts` (mappa già
+  condivisa fra i due telefoni) e il segno di "già vista" in localStorage:
+  nessuna delle due cose richiede una colonna nuova, quindi nessuna migrazione.

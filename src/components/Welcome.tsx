@@ -21,7 +21,7 @@ import { Input, TextArea } from './ui'
  * Ogni schermata ha il suo "Salta", che porta semplicemente alla successiva:
  * è un regalo, non un modulo da compilare.
  */
-export function Welcome({ onDone }: { onDone: () => void }) {
+export function Welcome({ person, onDone }: { person: 'a' | 'b'; onDone: () => void }) {
   const { data, updateSettings, saveItem, saveQuote, saveSaying } = useApp()
   const [step, setStep] = useState(0)
   const [busy, setBusy] = useState(false)
@@ -38,8 +38,9 @@ export function Welcome({ onDone }: { onDone: () => void }) {
   const [saying, setSaying] = useState('')
   const [sayingMeaning, setSayingMeaning] = useState('')
 
-  const lei = data.settings.nameB || 'amore'
-  const lui = data.settings.nameA || 'lui'
+  // Chi sta facendo la presentazione, e chi gliel'ha preparata.
+  const lei = (person === 'b' ? data.settings.nameB : data.settings.nameA) || 'amore'
+  const lui = (person === 'b' ? data.settings.nameA : data.settings.nameB) || 'lui'
 
   const newItem = (categoryId: string, title: string, meta: Record<string, string> = {}): Item => ({
     id: randomId(),
@@ -217,7 +218,7 @@ export function Welcome({ onDone }: { onDone: () => void }) {
   async function avanti() {
     if (last) {
       await salva()
-      markWelcomeSeen('b')
+      markWelcomeSeen(person)
       // Niente festeggiamento inventato qui: appena la data dell'anniversario
       // è salvata, il traguardo degli anni insieme scatta da solo e si prende
       // la scena. Un "benvenuta" generico gli finirebbe sotto — e comunque

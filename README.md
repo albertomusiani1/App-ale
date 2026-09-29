@@ -50,8 +50,9 @@ un viaggio con le sue tappe; altrove diventa una scheda per ogni posto.
 Funziona anche con gli export di Google My Maps, che usano gli stessi formati.
 
 ### 💛 La prima volta
-Quando lei entra per la prima volta su un telefono, l'app non la lascia davanti
-a un calendario vuoto: le fa otto domande e si riempie mentre risponde — da
+Quando la persona indicata in **Impostazioni → La presentazione di benvenuto è
+per** entra per la prima volta su un telefono, l'app non la lascia davanti a un
+calendario vuoto: le fa otto domande e si riempie mentre risponde — da
 quando stiamo insieme, il primo viaggio, il primo sushi, cosa guardiamo, la
 prossima avventura, una frase che ci rappresenta, il primo modo di dire — e
 finisce con una presentazione di cosa c'è dentro.

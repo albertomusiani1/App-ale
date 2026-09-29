@@ -8,6 +8,31 @@
  */
 const KEY = 'noi-due:welcome'
 
+/**
+ * A chi tocca la presentazione.
+ *
+ * Non basta dire "la seconda persona": i due nomi si possono inserire
+ * nell'ordine che si vuole, e chi riceve il regalo può benissimo stare nel
+ * primo campo. Quindi lo si sceglie per nome dalle Impostazioni.
+ *
+ * Il valore vive dentro `settings.texts`, che è già una mappa condivisa fra i
+ * due telefoni: serve che la scelta fatta su un telefono valga sull'altro, e
+ * questo evita di aggiungere una colonna al database — cioè una migrazione da
+ * ricordarsi proprio il giorno in cui l'app viene regalata.
+ */
+const TARGET_KEY = 'welcome.for'
+
+export function welcomeTarget(texts: Record<string, string>): 'a' | 'b' {
+  return texts[TARGET_KEY] === 'a' ? 'a' : 'b'
+}
+
+export function withWelcomeTarget(
+  texts: Record<string, string>,
+  person: 'a' | 'b',
+): Record<string, string> {
+  return { ...texts, [TARGET_KEY]: person }
+}
+
 export function welcomeSeen(person: string): boolean {
   try {
     return localStorage.getItem(`${KEY}:${person}`) === '1'

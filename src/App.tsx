@@ -18,7 +18,7 @@ import { WorldMapPage } from './pages/WorldMapPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { LoginPage, WhoAreYou } from './pages/LoginPage'
 import { Welcome } from './components/Welcome'
-import { takeWelcomeRequest, welcomeSeen } from './lib/welcome'
+import { takeWelcomeRequest, welcomeSeen, welcomeTarget } from './lib/welcome'
 
 export default function App() {
   const { signedIn, loading } = useAuth()
@@ -55,12 +55,14 @@ function Shell() {
   const [welcomeChiuso, setWelcomeChiuso] = useState(false)
   /** Richiesta esplicita dalle impostazioni: vale per chiunque, una volta sola. */
   const [richiesto] = useState(takeWelcomeRequest)
-  const mostraWelcome = !welcomeChiuso && (richiesto || (me === 'b' && !welcomeSeen('b')))
+  const destinatario = welcomeTarget(data.settings.texts)
+  const mostraWelcome =
+    !welcomeChiuso && (richiesto || (me === destinatario && !welcomeSeen(me)))
 
   if (loading) return <Splash />
   if (!me) return <WhoAreYou nameA={data.settings.nameA} nameB={data.settings.nameB} />
   // La presentazione è per lei, la prima volta che entra su questo telefono.
-  if (mostraWelcome) return <Welcome onDone={() => setWelcomeChiuso(true)} />
+  if (mostraWelcome) return <Welcome person={me} onDone={() => setWelcomeChiuso(true)} />
 
   return (
     <div className="mx-auto min-h-dvh max-w-lg">
