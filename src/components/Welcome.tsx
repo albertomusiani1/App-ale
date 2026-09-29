@@ -18,7 +18,8 @@ import { Input, TextArea } from './ui'
  * percorso speciale da mantenere: se domani cambia il form dei viaggi, cambia
  * anche quello che nasce da qui.
  *
- * Tutte le domande si possono saltare. È un regalo, non un modulo.
+ * Ogni schermata ha il suo "Salta", che porta semplicemente alla successiva:
+ * è un regalo, non un modulo da compilare.
  */
 export function Welcome({ onDone }: { onDone: () => void }) {
   const { data, updateSettings, saveItem, saveQuote, saveSaying } = useApp()
@@ -94,7 +95,7 @@ export function Welcome({ onDone }: { onDone: () => void }) {
     {
       emoji: '💛',
       title: `Ciao ${lei}`,
-      text: `${lui} ti ha costruito un posto dove tenere le nostre cose: i viaggi, i posti dove mangiamo, le sciocchezze che ci diciamo. Adesso è vuoto. Riempiamolo insieme, ci vogliono due minuti.`,
+      text: `${lui} ti ha costruito un posto dove tenere le nostre cose. Adesso è vuoto, ma va riempito pian pianino.`,
       color: 'agenda',
     },
     {
@@ -109,7 +110,7 @@ export function Welcome({ onDone }: { onDone: () => void }) {
     {
       emoji: '✈️',
       title: 'Il primo viaggio',
-      text: 'Uno che vogliamo fare. Non deve essere realistico, deve essere nostro.',
+      text: 'Inserisci un nostro viaggio, vai uno step alla volta, non ti preoccupare.',
       color: 'trips',
       field: (
         <Input
@@ -135,7 +136,7 @@ export function Welcome({ onDone }: { onDone: () => void }) {
     {
       emoji: '🍿',
       title: 'Cosa guardiamo?',
-      text: 'Un film o una serie da vedere insieme. Quello che rimandiamo da mesi va benissimo.',
+      text: 'Dai dimmi una serie che vorresti fargli guardare, ma da cui scappa di continuo... pirlonone.',
       color: 'screen',
       field: (
         <Input
@@ -148,7 +149,7 @@ export function Welcome({ onDone }: { onDone: () => void }) {
     {
       emoji: '🎡',
       title: 'La prossima avventura',
-      text: 'Un concerto, un parco, una mostra, una gita. Qualcosa da fare, non da guardare.',
+      text: 'Hai un giro fuori porta che vorresti fare?',
       color: 'outings',
       field: (
         <Input
@@ -284,7 +285,7 @@ export function Welcome({ onDone }: { onDone: () => void }) {
               onClick={() => setStep((s) => s + 1)}
               className="w-full py-2 text-sm font-semibold text-muted underline"
             >
-              {step === 0 ? 'Salto la presentazione' : 'Lo faccio dopo'}
+              Salta ›
             </button>
           )}
           {step > 0 && !last && (
