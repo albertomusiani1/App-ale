@@ -27,6 +27,7 @@ import type {
   Category,
   ColorKey,
   ExamOutcome,
+  FixRequest,
   Item,
   LadderState,
   Photo,
@@ -76,6 +77,8 @@ interface AppValue {
   snoozeExam: (eventId: string) => Promise<void>
   /** L'esame di cui l'app sta aspettando l'esito, se ce n'è uno. */
   pendingExam: CalEvent | null
+  saveFix: (fix: FixRequest) => Promise<void>
+  deleteFix: (id: string) => Promise<void>
   saveSaying: (saying: Saying) => Promise<void>
   deleteSaying: (id: string) => Promise<void>
   saveQuote: (quote: Quote) => Promise<void>
@@ -313,6 +316,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
       erase('achievements', id, (d) => ({ ...d, achievements: d.achievements.filter((a) => a.id !== id) })),
     [erase],
   )
+  const saveFix = useCallback(
+    (f: FixRequest) => write('fixes', f, (d) => ({ ...d, fixes: upsertIn(d.fixes, f) })),
+    [write],
+  )
+  const deleteFix = useCallback(
+    (id: string) => erase('fixes', id, (d) => ({ ...d, fixes: d.fixes.filter((f) => f.id !== id) })),
+    [erase],
+  )
   const saveSaying = useCallback(
     (s: Saying) => write('sayings', s, (d) => ({ ...d, sayings: upsertIn(d.sayings, s) })),
     [write],
@@ -500,6 +511,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       answerExam,
       snoozeExam,
       pendingExam,
+      saveFix,
+      deleteFix,
       saveSaying,
       deleteSaying,
       saveQuote,
@@ -515,7 +528,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [
       data, loading, error, t, saveItem, deleteItem, saveStop, deleteStop, saveStopDay,
       saveEvent, deleteEvent, saveCategory, deleteCategory, saveAchievement, deleteAchievement,
-      answerExam, snoozeExam, pendingExam,
+      answerExam, snoozeExam, pendingExam, saveFix, deleteFix,
       saveSaying, deleteSaying, saveQuote, deleteQuote, updateSettings, addPhoto, deletePhoto,
       celebration, celebrate, dismissCelebration, load,
     ],

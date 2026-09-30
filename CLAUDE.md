@@ -28,6 +28,15 @@ senza doverlo ripescare.
 4. Sul telefono serve una ricarica forzata (`Ctrl+Shift+R`): il service worker
    tiene in cache la versione precedente.
 
+## Da controllare
+
+- **I pop-up non funzionano** (segnalato il 30 settembre 2026). Da chiarire
+  quali: la bollicina dei modi di dire in basso, che parte 25-30 secondi dopo
+  l'apertura e poi ogni tot minuti, oppure le celebrazioni dei traguardi. Il
+  primo posto dove guardare è `src/components/SayingBubble.tsx` per la
+  bollicina e l'effetto delle scale in `src/store/AppStore.tsx` per le
+  celebrazioni. Chiedere prima quale dei due, altrimenti si cerca al buio.
+
 ## Cose da ricordare
 
 - Le tre variabili (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`,
@@ -38,8 +47,10 @@ senza doverlo ripescare.
   Impostazioni; i pulsanti e le etichette dei campi restano fuori di proposito.
 - La palette porta anche il colore del testo da scrivere sopra ogni tinta
   (`on`): sul giallo il bianco non si legge.
-- La presentazione di benvenuto parte per la persona scelta in
-  **Impostazioni → Noi due → La presentazione di benvenuto è per**, e solo la
-  prima volta su quel telefono. La scelta sta in `settings.texts` (mappa già
+- La persona scelta in **Impostazioni → Noi due → Questa app è un regalo per**
+  è quella che riceve la presentazione di benvenuto (la prima volta su quel
+  telefono) e che vede le impostazioni ridotte: solo chi usa il telefono, modi
+  di dire, frasi, foto, richieste di modifica e stato dei dati. All'altro
+  restano tutti i comandi. La scelta sta in `settings.texts` (mappa già
   condivisa fra i due telefoni) e il segno di "già vista" in localStorage:
   nessuna delle due cose richiede una colonna nuova, quindi nessuna migrazione.

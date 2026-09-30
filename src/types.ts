@@ -175,6 +175,20 @@ export interface LadderState {
   unlockedAt: string | null
 }
 
+/**
+ * Una richiesta di modifica all'app, scritta da dentro l'app stessa.
+ * Serve a non perdere le idee che vengono usandola: si scrivono lì per lì e
+ * chi mette mano al codice le trova già pronte.
+ */
+export interface FixRequest {
+  id: string
+  text: string
+  author: Person | null
+  /** Quando è stata spuntata. `null` = ancora da fare. */
+  doneAt: string | null
+  createdAt: string
+}
+
 export interface Settings {
   /** Come si chiama l'app dentro l'app: lo decidiamo noi. */
   appName: string

@@ -106,6 +106,16 @@ create table if not exists public.ladders (
   unlocked_at timestamptz
 );
 
+-- Le richieste di modifica scritte da dentro l'app.
+create table if not exists public.fixes (
+  id         text primary key,
+  text       text not null default '',
+  author     text,
+  done_at    timestamptz,
+  created_at timestamptz not null default now()
+);
+create index if not exists fixes_open_idx on public.fixes(done_at);
+
 -- I nostri modi di dire.
 create table if not exists public.sayings (
   id         text primary key,
@@ -184,7 +194,7 @@ declare t text;
 begin
   foreach t in array array[
     'categories','items','stops','stop_days','photos',
-    'events','achievements','ladders','sayings','quotes','settings'
+    'events','achievements','ladders','fixes','sayings','quotes','settings'
   ]
   loop
     execute format('alter table public.%I enable row level security', t);
@@ -203,7 +213,7 @@ declare t text;
 begin
   foreach t in array array[
     'categories','items','stops','stop_days','photos',
-    'events','achievements','ladders','sayings','quotes','settings'
+    'events','achievements','ladders','fixes','sayings','quotes','settings'
   ]
   loop
     begin

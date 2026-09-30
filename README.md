@@ -62,6 +62,16 @@ un percorso speciale da mantenere. Tutte le domande si possono saltare. Si
 rivede da **Impostazioni → Rivedi la presentazione**, che serve anche a
 provarla prima di regalare l'app.
 
+### 🛠️ Richieste di modifica
+Dentro le Impostazioni si scrivono le richieste di modifica all'app: servono a
+non perdere le idee che vengono usandola. Chi mette mano al codice le trova
+già pronte, le spunta quando sono fatte e spariscono dall'elenco — restando
+comunque recuperabili, perché capita di segnare per sbaglio.
+
+Le impostazioni hanno due facce: chi ha ricevuto l'app in regalo vede solo le
+sue cose (modi di dire, frasi, foto, richieste, chi usa il telefono), mentre i
+comandi che decidono com'è fatta l'app restano a chi l'ha costruita.
+
 ### 💬 Le nostre parole
 Il nome dell'app e una cinquantina di frasi — le celebrazioni, i messaggi delle
 liste vuote, i titoli, le battute di ogni scalino dei traguardi — si riscrivono

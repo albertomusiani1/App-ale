@@ -3,6 +3,7 @@ import type {
   CalEvent,
   Category,
   ExamOutcome,
+  FixRequest,
   Item,
   LadderState,
   Photo,
@@ -27,6 +28,7 @@ export interface Dataset {
   events: CalEvent[]
   achievements: Achievement[]
   ladders: LadderState[]
+  fixes: FixRequest[]
   sayings: Saying[]
   quotes: Quote[]
   settings: Settings
@@ -43,6 +45,7 @@ export const emptyDataset = (): Dataset => ({
   events: [],
   achievements: [],
   ladders: [],
+  fixes: [],
   sayings: [],
   quotes: [],
   settings: { ...DEFAULT_SETTINGS },
@@ -74,6 +77,7 @@ const TABLE_NAMES: Record<TableName, string> = {
   events: 'events',
   achievements: 'achievements',
   ladders: 'ladders',
+  fixes: 'fixes',
   sayings: 'sayings',
   quotes: 'quotes',
 }
@@ -236,6 +240,22 @@ const mappers: { [K in TableName]: { to: (v: Dataset[K][number]) => AnyRow; from
       id: r.id as string,
       level: Number(r.level ?? 0),
       unlockedAt: (r.unlocked_at as string) ?? null,
+    }),
+  },
+  fixes: {
+    to: (f) => ({
+      id: f.id,
+      text: f.text,
+      author: f.author,
+      done_at: f.doneAt,
+      created_at: f.createdAt,
+    }),
+    from: (r) => ({
+      id: r.id as string,
+      text: (r.text as string) ?? '',
+      author: (r.author as FixRequest['author']) ?? null,
+      doneAt: (r.done_at as string) ?? null,
+      createdAt: (r.created_at as string) ?? new Date().toISOString(),
     }),
   },
   sayings: {

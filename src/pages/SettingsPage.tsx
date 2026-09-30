@@ -12,12 +12,20 @@ import { forgetWelcome, requestWelcome, welcomeTarget, withWelcomeTarget } from 
 import { Field, FieldGroup, Input, PageTitle, TextArea } from '../components/ui'
 import type { Quote, Saying } from '../types'
 
-/** Impostazioni: i vostri dati, i modi di dire, le frasi e le foto dei pop-up. */
+/** Impostazioni: i nostri dati, i modi di dire, le frasi e le foto dei pop-up. */
 export function SettingsPage() {
   const { data, updateSettings, mode, t } = useApp()
   const { me, setMe, signOut } = useAuth()
   const { settings } = data
   const years = yearsSince(settings.anniversary)
+  /**
+   * Chi ha ricevuto l'app in regalo vede solo le sue cose: i modi di dire, le
+   * frasi, le foto, chi sta usando il telefono e lo stato dei dati. I comandi
+   * che decidono come è fatta l'app — nomi, data, testi, animazioni — restano
+   * a chi l'ha costruita, altrimenti sono solo un modo per rompere qualcosa
+   * per sbaglio.
+   */
+  const ospite = me === welcomeTarget(settings.texts)
 
   return (
     <div className="space-y-5 pb-6">
@@ -41,74 +49,84 @@ export function SettingsPage() {
       <section className="card space-y-4 p-5">
         <h2 className="font-display text-xl font-bold">{t('settings.us')}</h2>
 
-        <Field
-          label="Come si chiama la nostra app"
-          hint="Compare nella schermata di accesso. Il nome sotto l icona sulla home del telefono si cambia solo ripubblicando."
-        >
-          <Input
-            value={settings.appName}
-            placeholder="LoviDovi"
-            onChange={(e) => void updateSettings({ appName: e.target.value })}
-          />
-        </Field>
+        {!ospite && (
+          <>
+            <Field
+              label="Come si chiama la nostra app"
+              hint="Compare nella schermata di accesso. Il nome sotto l icona sulla home del telefono si cambia solo ripubblicando."
+            >
+              <Input
+                value={settings.appName}
+                placeholder="LoviDovi"
+                onChange={(e) => void updateSettings({ appName: e.target.value })}
+              />
+            </Field>
 
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Nome 1">
-            <Input value={settings.nameA} onChange={(e) => void updateSettings({ nameA: e.target.value })} />
-          </Field>
-          <Field label="Nome 2">
-            <Input value={settings.nameB} onChange={(e) => void updateSettings({ nameB: e.target.value })} />
-          </Field>
-        </div>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Nome 1">
+                <Input
+                  value={settings.nameA}
+                  onChange={(e) => void updateSettings({ nameA: e.target.value })}
+                />
+              </Field>
+              <Field label="Nome 2">
+                <Input
+                  value={settings.nameB}
+                  onChange={(e) => void updateSettings({ nameB: e.target.value })}
+                />
+              </Field>
+            </div>
 
-        <Field
-          label="Da quando state insieme"
-          hint={
-            settings.anniversary
-              ? `${plural(years, 'anno', 'anni')} insieme: gli achievement anniversario si sbloccano da qui.`
-              : 'Serve per gli achievement e per il contatore in cima al calendario.'
-          }
-        >
-          <Input
-            type="date"
-            value={settings.anniversary ?? ''}
-            onChange={(e) => void updateSettings({ anniversary: e.target.value || null })}
-          />
-        </Field>
+            <Field
+              label="Da quando state insieme"
+              hint={
+                settings.anniversary
+                  ? `${plural(years, 'anno', 'anni')} insieme: gli achievement anniversario si sbloccano da qui.`
+                  : 'Serve per gli achievement e per il contatore in cima al calendario.'
+              }
+            >
+              <Input
+                type="date"
+                value={settings.anniversary ?? ''}
+                onChange={(e) => void updateSettings({ anniversary: e.target.value || null })}
+              />
+            </Field>
 
-        <FieldGroup
-          label="La presentazione di benvenuto è per"
-          hint="La prima volta che questa persona entra, l app le fa qualche domanda e si riempie mentre risponde. All altro non compare."
-        >
-          <div className="flex gap-2">
-            {(['a', 'b'] as const).map((p) => {
-              const attivo = welcomeTarget(settings.texts) === p
-              return (
-                <button
-                  key={p}
-                  type="button"
-                  onClick={() => {
-                    void updateSettings({ texts: withWelcomeTarget(settings.texts, p) })
-                    // Chi la deve vedere non l ha ancora vista.
-                    forgetWelcome(p)
-                  }}
-                  className="flex-1 rounded-2xl border px-3 py-3 font-semibold transition active:scale-95"
-                  style={
-                    attivo
-                      ? {
-                          background: colorOf('agenda').hex,
-                          color: colorOf('agenda').on,
-                          borderColor: colorOf('agenda').hex,
-                        }
-                      : { background: '#fff', borderColor: 'rgba(0,0,0,0.08)' }
-                  }
-                >
-                  💛 {p === 'a' ? settings.nameA : settings.nameB}
-                </button>
-              )
-            })}
-          </div>
-        </FieldGroup>
+            <FieldGroup
+              label="Questa app è un regalo per"
+              hint="A questa persona parte la presentazione di benvenuto la prima volta che entra, e le impostazioni restano semplici: vede solo le cose sue. L altro tiene tutti i comandi."
+            >
+              <div className="flex gap-2">
+                {(['a', 'b'] as const).map((p) => {
+                  const attivo = welcomeTarget(settings.texts) === p
+                  return (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() => {
+                        void updateSettings({ texts: withWelcomeTarget(settings.texts, p) })
+                        // Chi la deve vedere non l ha ancora vista.
+                        forgetWelcome(p)
+                      }}
+                      className="flex-1 rounded-2xl border px-3 py-3 font-semibold transition active:scale-95"
+                      style={
+                        attivo
+                          ? {
+                              background: colorOf('agenda').hex,
+                              color: colorOf('agenda').on,
+                              borderColor: colorOf('agenda').hex,
+                            }
+                          : { background: '#fff', borderColor: 'rgba(0,0,0,0.08)' }
+                      }
+                    >
+                      💛 {p === 'a' ? settings.nameA : settings.nameB}
+                    </button>
+                  )
+                })}
+              </div>
+            </FieldGroup>
+          </>
+        )}
 
         <FieldGroup label="Chi sta usando questo telefono" hint="Serve solo a capire di chi è ogni voto.">
           <div className="flex gap-2">
@@ -137,7 +155,7 @@ export function SettingsPage() {
 
       <SayingsSection />
       <QuotesSection />
-      <WordsSection />
+      {!ospite && <WordsSection />}
 
       {/* --- Galleria per i pop-up --- */}
       <section className="card space-y-3 p-5">
@@ -149,6 +167,7 @@ export function SettingsPage() {
       </section>
 
       {/* --- Animazioni --- */}
+      {!ospite && (
       <section className="card space-y-4 p-5">
         <h2 className="font-display text-xl font-bold">Animazioni</h2>
 
@@ -180,10 +199,13 @@ export function SettingsPage() {
           />
         </label>
       </section>
+      )}
+
+      <FixSection ospite={ospite} />
 
       {/* --- Stato dei dati --- */}
       <section className="card space-y-3 p-5">
-        <h2 className="font-display text-xl font-bold">I vostri dati</h2>
+        <h2 className="font-display text-xl font-bold">I nostri dati</h2>
         <p className="text-sm text-muted">
           {mode === 'cloud' ? (
             <>
@@ -617,5 +639,143 @@ function WordField({
         </p>
       )}
     </div>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+
+/**
+ * Le richieste di modifica all'app, scritte da dentro l'app.
+ *
+ * Servono a non perdere le idee che vengono usandola: si scrivono lì per lì,
+ * e chi mette mano al codice le trova già pronte. Spuntandone una sparisce
+ * dall'elenco, ma resta recuperabile: capita di segnare per sbaglio.
+ */
+function FixSection({ ospite }: { ospite: boolean }) {
+  const { data, saveFix, deleteFix } = useApp()
+  const { me } = useAuth()
+  const [testo, setTesto] = useState('')
+  const [mostraFatte, setMostraFatte] = useState(false)
+  const c = colorOf('outings')
+
+  const aperte = data.fixes.filter((f) => !f.doneAt).sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+  const fatte = data.fixes.filter((f) => f.doneAt).sort((a, b) => (b.doneAt ?? '').localeCompare(a.doneAt ?? ''))
+
+  const chi = (f: { author: string | null }) =>
+    f.author === 'a' ? data.settings.nameA : f.author === 'b' ? data.settings.nameB : null
+
+  function aggiungi() {
+    const pulito = testo.trim()
+    if (!pulito) return
+    void saveFix({
+      id: randomId(),
+      text: pulito,
+      author: me,
+      doneAt: null,
+      createdAt: new Date().toISOString(),
+    })
+    setTesto('')
+  }
+
+  return (
+    <section className="card space-y-3 p-5">
+      <div>
+        <h2 className="font-display text-xl font-bold">🛠️ Richieste di modifica</h2>
+        <p className="text-sm text-muted">
+          {ospite
+            ? 'Qualcosa non va, o ti piacerebbe che l app facesse un altra cosa? Scrivilo qui: lo legge chi la sta costruendo.'
+            : 'Quello che è stato chiesto. Spunta una richiesta quando è fatta e sparisce dall elenco.'}
+        </p>
+      </div>
+
+      <div className="flex gap-2">
+        <Input
+          value={testo}
+          placeholder="Vorrei che..."
+          onChange={(e) => setTesto(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') aggiungi()
+          }}
+        />
+        <button
+          type="button"
+          onClick={aggiungi}
+          disabled={!testo.trim()}
+          className="btn shrink-0 px-5 shadow-soft disabled:opacity-40"
+          style={{ background: c.hex, color: c.on }}
+        >
+          Aggiungi
+        </button>
+      </div>
+
+      {aperte.length === 0 ? (
+        <p className="rounded-2xl bg-white px-4 py-6 text-center text-sm text-muted shadow-soft">
+          Nessuna richiesta in sospeso.
+        </p>
+      ) : (
+        <ul className="space-y-2">
+          {aperte.map((f) => (
+            <li key={f.id}>
+              <div className="flex items-start gap-3 rounded-2xl bg-white px-4 py-3 shadow-soft">
+                <button
+                  type="button"
+                  aria-label="Segna come fatta"
+                  onClick={() => void saveFix({ ...f, doneAt: new Date().toISOString() })}
+                  className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 text-xs active:scale-90"
+                  style={{ borderColor: c.hex, color: c.hex }}
+                >
+                  ✓
+                </button>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-sm leading-snug">{f.text}</span>
+                  {chi(f) && (
+                    <span className="block text-xs text-muted">chiesto da {chi(f)}</span>
+                  )}
+                </span>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {fatte.length > 0 && (
+        <>
+          <button
+            type="button"
+            onClick={() => setMostraFatte((v) => !v)}
+            className="w-full py-1 text-xs font-semibold text-muted underline"
+          >
+            {mostraFatte ? 'nascondi' : `${fatte.length} già ${fatte.length === 1 ? 'fatta' : 'fatte'}`}
+          </button>
+          {mostraFatte && (
+            <ul className="space-y-1.5">
+              {fatte.map((f) => (
+                <li
+                  key={f.id}
+                  className="flex items-center gap-2 rounded-2xl bg-white/70 px-4 py-2 text-sm text-muted"
+                >
+                  <span className="min-w-0 flex-1 truncate line-through">{f.text}</span>
+                  <button
+                    type="button"
+                    onClick={() => void saveFix({ ...f, doneAt: null })}
+                    className="shrink-0 text-xs underline"
+                  >
+                    riapri
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Elimina"
+                    onClick={() => void deleteFix(f.id)}
+                    className="shrink-0 text-xs"
+                  >
+                    🗑️
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </>
+      )}
+    </section>
   )
 }
