@@ -9,6 +9,7 @@ import { PhotoGrid } from '../components/Photos'
 import { Sheet } from '../components/Sheet'
 import { COPY_FIELDS, COPY_GROUPS, DEFAULT_COPY } from '../lib/copy'
 import { forgetWelcome, requestWelcome, welcomeTarget, withWelcomeTarget } from '../lib/welcome'
+import { MOSTRA_MODO_DI_DIRE } from '../components/SayingBubble'
 import { Field, FieldGroup, Input, PageTitle, TextArea } from '../components/ui'
 import type { Quote, Saying } from '../types'
 
@@ -311,6 +312,8 @@ function SayingsSection() {
           ))}
         </ul>
       )}
+
+      <StatoBollicina />
 
       <Sheet
         open={open}
@@ -777,5 +780,47 @@ function FixSection({ ospite }: { ospite: boolean }) {
         </>
       )}
     </section>
+  )
+}
+
+/**
+ * Perché la bollicina compare o non compare, detto chiaramente, più un modo
+ * per vederla subito.
+ *
+ * Senza questo, quando non si fa viva non si capisce se il problema sono i
+ * modi di dire mancanti, la frequenza a zero o qualcos altro: si resta a
+ * fissare lo schermo sperando.
+ */
+function StatoBollicina() {
+  const { data } = useApp()
+  const { sayings, settings } = data
+  const spenta = settings.sayingFrequency <= 0
+
+  return (
+    <div className="rounded-2xl bg-white px-4 py-3 shadow-soft">
+      <p className="text-xs leading-snug text-muted">
+        {sayings.length === 0 ? (
+          <>Appena ne aggiungiamo uno, comincerà a comparire da solo in fondo allo schermo.</>
+        ) : spenta ? (
+          <>⚠️ Le bollicine sono spente: la frequenza è a zero, in Animazioni.</>
+        ) : (
+          <>
+            La prima compare 25-30 secondi dopo l apertura, poi circa ogni{' '}
+            {settings.sayingFrequency} minuti. Il conto riparte ogni volta che si torna
+            nell app.
+          </>
+        )}
+      </p>
+      {sayings.length > 0 && !spenta && (
+        <button
+          type="button"
+          onClick={() => window.dispatchEvent(new Event(MOSTRA_MODO_DI_DIRE))}
+          className="mt-2 text-xs font-semibold underline"
+          style={{ color: colorOf('agenda').ink }}
+        >
+          🗯️ Provala adesso
+        </button>
+      )}
+    </div>
   )
 }

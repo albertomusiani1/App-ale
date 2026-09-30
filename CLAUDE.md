@@ -30,12 +30,13 @@ senza doverlo ripescare.
 
 ## Da controllare
 
-- **I pop-up non funzionano** (segnalato il 30 settembre 2026). Da chiarire
-  quali: la bollicina dei modi di dire in basso, che parte 25-30 secondi dopo
-  l'apertura e poi ogni tot minuti, oppure le celebrazioni dei traguardi. Il
-  primo posto dove guardare è `src/components/SayingBubble.tsx` per la
-  bollicina e l'effetto delle scale in `src/store/AppStore.tsx` per le
-  celebrazioni. Chiedere prima quale dei due, altrimenti si cerca al buio.
+- **La bollicina dei modi di dire** (segnalata il 30 settembre 2026, le
+  celebrazioni invece funzionano). Nel collaudo compariva regolarmente, quindi
+  il sospetto è il telefono: i timer si fermano quando l'app va in secondo
+  piano. Ora il conto riparte a ogni ritorno in primo piano, e in Impostazioni
+  c'è "Provala adesso" con una riga che dice perché non si vede. Se ancora non
+  compare, il pulsante distingue i due casi: se con quello si vede, il problema
+  è il timer; se non si vede nemmeno così, è il componente.
 
 ## Cose da ricordare
 

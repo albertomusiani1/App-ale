@@ -3,7 +3,13 @@ import { useEffect, useState } from 'react'
 import { useApp } from '../store/AppStore'
 
 /**
- * Ogni tanto spunta in basso uno dei vostri modi di dire, così non finiscono
+ * L'evento con cui le Impostazioni possono far comparire una bollicina
+ * all'istante, senza aspettare il timer: serve a verificare che funzioni.
+ */
+export const MOSTRA_MODO_DI_DIRE = 'lovidovi:modo-di-dire'
+
+/**
+ * Ogni tanto spunta in basso uno dei nostri modi di dire, così non finiscono
  * dimenticati. La frequenza si regola dalle Impostazioni (0 = mai).
  */
 export function SayingBubble() {
@@ -12,28 +18,64 @@ export function SayingBubble() {
   const { sayings, settings } = data
 
   useEffect(() => {
-    if (settings.sayingFrequency <= 0 || sayings.length === 0) {
+    if (sayings.length === 0) {
       setIndex(null)
       return
     }
-    const everyMs = settings.sayingFrequency * 60_000
-    const show = () => {
+
+    let attesa = 0
+    let ripetizione = 0
+    let sparizione = 0
+
+    const mostra = () => {
       setIndex(Math.floor(Math.random() * sayings.length))
       // Resta a galla qualche secondo e poi se ne va da sola.
-      window.setTimeout(() => setIndex(null), 7000)
+      window.clearTimeout(sparizione)
+      sparizione = window.setTimeout(() => setIndex(null), 7000)
     }
-    // Il primo arriva presto, fra i 25 e i 30 secondi dall'apertura: abbastanza
-    // per non sovrapporsi al caricamento, abbastanza poco da farsi notare.
-    // Da lì in poi comanda il tempo scelto nelle impostazioni.
-    const firstDelay = 25_000 + Math.random() * 5_000
-    let interval = 0
-    const first = window.setTimeout(() => {
-      show()
-      interval = window.setInterval(show, everyMs)
-    }, firstDelay)
+
+    /**
+     * Fa ripartire il conto alla rovescia dall'inizio.
+     *
+     * Il primo arriva fra i 25 e i 30 secondi: abbastanza per non
+     * sovrapporsi al caricamento, abbastanza poco da farsi notare. Da lì in
+     * poi comanda il tempo scelto nelle impostazioni.
+     */
+    const riparti = () => {
+      window.clearTimeout(attesa)
+      window.clearInterval(ripetizione)
+      if (settings.sayingFrequency <= 0) return
+      attesa = window.setTimeout(
+        () => {
+          mostra()
+          ripetizione = window.setInterval(mostra, settings.sayingFrequency * 60_000)
+        },
+        25_000 + Math.random() * 5_000,
+      )
+    }
+
+    riparti()
+
+    /**
+     * Sul telefono i timer si fermano appena l'app finisce in secondo piano,
+     * e chi apre l'app per venti secondi e poi blocca lo schermo non vedrebbe
+     * mai niente. Quindi il conto riparte ogni volta che l'app torna davanti:
+     * "venticinque secondi dall'apertura" diventa vero sul serio.
+     */
+    const alRitorno = () => {
+      if (document.visibilityState === 'visible') riparti()
+    }
+    document.addEventListener('visibilitychange', alRitorno)
+    window.addEventListener('focus', alRitorno)
+    window.addEventListener(MOSTRA_MODO_DI_DIRE, mostra)
+
     return () => {
-      window.clearTimeout(first)
-      if (interval) window.clearInterval(interval)
+      window.clearTimeout(attesa)
+      window.clearInterval(ripetizione)
+      window.clearTimeout(sparizione)
+      document.removeEventListener('visibilitychange', alRitorno)
+      window.removeEventListener('focus', alRitorno)
+      window.removeEventListener(MOSTRA_MODO_DI_DIRE, mostra)
     }
   }, [settings.sayingFrequency, sayings.length])
 
