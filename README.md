@@ -36,18 +36,33 @@ Quelli fatti e quelli che vorreste fare. Ogni viaggio ha:
   singola giornata;
 - una foto di copertina a scelta.
 
-### 🗺️ Mappe, e import da Wanderlog
-Ogni posto può avere una posizione: la cerchi per nome o la scegli toccando la
-mappa. Da lì:
-- **mappa del viaggio**, con le tappe in ordine;
-- **mappa-mondo** (`🌍 La nostra mappa`) con tutto quello che avete segnato,
-  filtrabile per categoria e per fatti / da fare;
-- **vista a mappa** anche nelle liste, per vedere cosa c'è vicino.
+### 🗺️ Una mappa sola, e import da Mapstr
+C'è **una mappa condivisa** — il `🌍` della barra in basso — e tutto quello che
+ha una posizione finisce lì: i ristoranti, le tappe dei viaggi, le uscite. Il
+colore dice da che sezione arriva, e si filtra per categoria e per fatti / da
+fare.
 
-Se usate già **Wanderlog**, non si ricomincia da capo: esportate il viaggio in
-**KML, KMZ, GPX o CSV** e lo caricate nell'app. In una categoria viaggi diventa
-un viaggio con le sue tappe; altrove diventa una scheda per ogni posto.
-Funziona anche con gli export di Google My Maps, che usano gli stessi formati.
+La posizione è il **primo campo** di ogni scheda, prima ancora del nome: è
+l'unica cosa che decide se un posto comparirà sulla mappa o no, quindi non va
+nascosta in fondo al form. Si cerca per nome, e la ricerca dice sempre com'è
+andata — trovato, non trovato, rete assente — invece di restare muta. Se non
+trova, o se la rete fa i capricci, il punto si mette col dito sulla mappa.
+Dalla mappa grande si può anche **aggiungere un posto toccandolo**: nome,
+sezione, fatto.
+
+Una cosa che l'app non fa di proposito: **indovinare le posizioni**. Non
+geolocalizza di nascosto quello che scrivete nel titolo. Sulla mappa va
+quello che ci avete messo voi.
+
+Restano la **mappa del viaggio** con le tappe in ordine e i chilometri, e la
+vista a mappa dentro le singole liste.
+
+Se usate già **Mapstr**, non si ricomincia da capo: Profilo → Impostazioni →
+*Gestisci i tuoi dati* → *Esporta*, e il file arriva per mail. L'app legge il
+**GeoJSON** e il **CSV** che manda, etichette comprese. In una categoria
+viaggi diventa un viaggio con le sue tappe; altrove una scheda per ogni posto.
+Vanno bene anche KML, KMZ e GPX, quindi funziona con Google My Maps e con
+quasi tutto il resto.
 
 ### 💛 La prima volta
 Quando la persona indicata in **Impostazioni → La presentazione di benvenuto è
@@ -168,7 +183,8 @@ src/
 │   ├── copy.ts    le frasi riscrivibili dalle Impostazioni
 │   ├── ladders.ts i traguardi a livelli, e le loro soglie
 │   ├── geo.ts     ricerca dei posti e distanze
-│   └── wanderlog.ts  lettura di KML, KMZ, GPX e CSV
+│   ├── tiles.ts   lo sfondo delle mappe, e la chiave CARTO
+│   └── importPlaces.ts  lettura di GeoJSON, KML, KMZ, GPX e CSV
 ├── store/        stato dell'app (AppStore) e accesso (AuthContext)
 ├── components/   pannelli, form, foto, animazioni, pop-up
 └── pages/        calendario, categorie, dettaglio, achievement, impostazioni

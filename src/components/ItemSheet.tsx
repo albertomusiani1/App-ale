@@ -93,10 +93,26 @@ export function ItemSheet({
         </div>
       }
     >
+      <PlacePicker
+        lat={draft.lat}
+        lng={draft.lng}
+        color={category.color}
+        hint={`Con una posizione, questo ${copy.one} compare sulla nostra mappa.`}
+        onChange={(lat, lng, name) =>
+          setDraft((d) => ({
+            // Il nome trovato dalla ricerca riempie il titolo solo se è ancora vuoto:
+            // non deve sovrascrivere quello che avete scritto voi.
+            ...d,
+            lat,
+            lng,
+            title: d.title.trim() ? d.title : (name ?? d.title),
+          }))
+        }
+      />
+
       <Field label={copy.titleLabel}>
         <Input
           value={draft.title}
-          autoFocus={isNew}
           placeholder={copy.titlePlaceholder}
           onChange={(e) => set('title', e.target.value)}
         />
@@ -112,22 +128,6 @@ export function ItemSheet({
         </Field>
       )}
 
-      <PlacePicker
-        lat={draft.lat}
-        lng={draft.lng}
-        color={category.color}
-        hint={`Con una posizione, questo ${copy.one} compare sulla mappa.`}
-        onChange={(lat, lng, name) =>
-          setDraft((d) => ({
-            // Il nome trovato dalla ricerca riempie il titolo solo se è ancora vuoto:
-            // non deve sovrascrivere quello che avete scritto voi.
-            ...d,
-            lat,
-            lng,
-            title: d.title.trim() ? d.title : (name ?? d.title),
-          }))
-        }
-      />
 
       {copy.types && (
         <FieldGroup label={copy.typeLabel ?? 'Tipo'}>

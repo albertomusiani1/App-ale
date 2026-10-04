@@ -13,13 +13,19 @@ interface Tab {
 
 /**
  * Quattro voci fisse più il ＋ al centro.
- * "Tutte" apre la griglia con ogni categoria, comprese quelle che create voi:
- * così la barra resta leggibile anche quando le categorie diventano dieci.
+ *
+ * La mappa sta qui perché è l'unica pagina che raccoglie tutto: ogni
+ * posizione che segniamo, da qualunque sezione, finisce lì dentro. Al suo
+ * posto c'erano i Ristoranti, che restano a un tocco dentro "Tutte".
+ *
+ * "Tutte" non si tocca: è la griglia con ogni categoria, comprese quelle che
+ * creiamo noi, e la porta per impegni, traguardi e impostazioni. Senza, la
+ * barra resterebbe pulita ma metà app diventerebbe irraggiungibile.
  */
 const TABS: Tab[] = [
   { to: '/', label: 'Calendario', emoji: '📅', color: 'agenda' },
   { to: `/c/${CAT.trips}`, label: 'Viaggi', emoji: '✈️', color: 'trips' },
-  { to: `/c/${CAT.places}`, label: 'Ristoranti', emoji: '🍝', color: 'places' },
+  { to: '/mappa', label: 'Mappa', emoji: '🌍', color: 'places' },
   { to: '/tutte', label: 'Tutte', emoji: '🗂️', color: 'custom' },
 ]
 

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
+import { sfondoMappa } from '../lib/tiles'
 
 export interface MapPoint {
   id: string
@@ -23,6 +24,12 @@ export interface MapViewProps {
   onPick?: (lat: number, lng: number) => void
   center?: [number, number]
   zoom?: number
+  /**
+   * Di norma la mappa si inquadra da sola sui punti che riceve. Chi sta
+   * scegliendo una posizione a mano lo spegne: vedersi strappare via
+   * l'inquadratura a ogni tocco rende impossibile puntare il dito.
+   */
+  fit?: boolean
 }
 
 /**
@@ -42,6 +49,7 @@ export default function MapView({
   onPick,
   center,
   zoom,
+  fit = true,
 }: MapViewProps) {
   const holder = useRef<HTMLDivElement>(null)
   const map = useRef<L.Map | null>(null)
@@ -59,10 +67,10 @@ export default function MapView({
       scrollWheelZoom: false,
     }).setView(center ?? [41.9, 12.5], zoom ?? 4)
 
-    // Sfondo CARTO: costruito sui dati OpenStreetMap, con colori tenui che non
-    // rubano la scena ai segnaposto colorati delle categorie.
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-      attribution: '© OpenStreetMap, © CARTO',
+    // Lo stile dello sfondo e la chiave stanno in lib/tiles.ts.
+    L.tileLayer(sfondoMappa.url, {
+      attribution: sfondoMappa.attribution,
+      subdomains: sfondoMappa.subdomains,
       maxZoom: 19,
     }).addTo(m)
 
@@ -115,6 +123,8 @@ export default function MapView({
       ).addTo(group)
     }
 
+    if (!fit) return
+
     if (points.length === 1) {
       m.setView([points[0].lat, points[0].lng], Math.max(zoom ?? 0, 11))
     } else if (points.length > 1) {
@@ -123,7 +133,7 @@ export default function MapView({
         maxZoom: 13,
       })
     }
-  }, [points, route, zoom])
+  }, [points, route, zoom, fit])
 
   return (
     <div

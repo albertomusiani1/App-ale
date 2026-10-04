@@ -18,6 +18,19 @@ export interface GeoPlace {
 const ENDPOINT = 'https://nominatim.openstreetmap.org'
 const MIN_GAP_MS = 1100
 
+/**
+ * Com'è andata la ricerca. Non basta la lista dei risultati: una lista vuota
+ * perché il posto non esiste e una lista vuota perché il telefono è offline
+ * vanno dette in due modi diversi, altrimenti sembra che l'app sia rotta.
+ */
+export type GeoEsito =
+  | { stato: 'ok'; luoghi: GeoPlace[] }
+  | { stato: 'vuoto' }
+  | { stato: 'corto' }
+  | { stato: 'offline' }
+  | { stato: 'errore' }
+  | { stato: 'annullato' }
+
 const cache = new Map<string, GeoPlace[]>()
 let lastCall = 0
 
@@ -28,20 +41,22 @@ async function throttle() {
   lastCall = Date.now()
 }
 
-/** Cerca un posto per nome. Restituisce una lista vuota se non trova nulla. */
-export async function searchPlaces(query: string, signal?: AbortSignal): Promise<GeoPlace[]> {
+/** Cerca un posto per nome, dicendo anche *perché* non ha trovato niente. */
+export async function searchPlaces(query: string, signal?: AbortSignal): Promise<GeoEsito> {
   const q = query.trim()
-  if (q.length < 3) return []
+  if (q.length < 3) return { stato: 'corto' }
   const cached = cache.get(q.toLowerCase())
-  if (cached) return cached
+  if (cached) return cached.length ? { stato: 'ok', luoghi: cached } : { stato: 'vuoto' }
 
   await throttle()
-  if (signal?.aborted) return []
+  if (signal?.aborted) return { stato: 'annullato' }
 
   const url = `${ENDPOINT}/search?format=jsonv2&limit=6&accept-language=it&q=${encodeURIComponent(q)}`
   try {
     const res = await fetch(url, { signal, headers: { Accept: 'application/json' } })
-    if (!res.ok) return []
+    // Nominatim risponde 429 a chi insiste e 5xx quando è sotto sforzo: in
+    // entrambi i casi il posto magari esiste, siamo noi che non lo sappiamo.
+    if (!res.ok) return { stato: 'errore' }
     const rows = (await res.json()) as { display_name: string; name?: string; lat: string; lon: string }[]
     const places = rows.map((r) => ({
       label: r.display_name,
@@ -50,10 +65,12 @@ export async function searchPlaces(query: string, signal?: AbortSignal): Promise
       lng: Number(r.lon),
     }))
     cache.set(q.toLowerCase(), places)
-    return places
+    return places.length ? { stato: 'ok', luoghi: places } : { stato: 'vuoto' }
   } catch {
-    // Rete assente o richiesta annullata: per l'app è semplicemente "nessun risultato".
-    return []
+    // `fetch` fallisce allo stesso modo se la richiesta è stata annullata o se
+    // la rete non c'è: il segnale dice quale dei due è successo.
+    if (signal?.aborted) return { stato: 'annullato' }
+    return { stato: 'offline' }
   }
 }
 

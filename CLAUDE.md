@@ -44,7 +44,16 @@ senza doverlo ripescare.
 
 - Le tre variabili (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`,
   `VITE_COUPLE_EMAIL`) stanno in **Settings → Build → Variables and secrets**,
-  non fra quelle del Worker: servono durante la compilazione.
+  non fra quelle del Worker: servono durante la compilazione. Lì va anche
+  `VITE_CARTO_KEY`, che è facoltativa: senza, le mappe usano lo sfondo di
+  OpenStreetMap invece di quello tenue di CARTO, e funzionano lo stesso.
+- La mappa è **una sola e condivisa** (il `🌍` nella barra in basso). Tutto
+  quello che ha una posizione ci finisce dentro, da qualunque sezione arrivi.
+  La posizione è il primo campo di ogni scheda proprio per questo: se resta
+  vuota, quel posto non comparirà da nessuna parte.
+- L'app **non indovina le posizioni**. Niente geolocalizzazione automatica di
+  quello che si scrive nel titolo: sulla mappa va solo quello che è stato
+  scelto a mano, da un risultato di ricerca o con un tocco.
 - I testi dell'app sono in prima persona plurale ("noi"), non "voi".
 - Le frasi con personalità stanno in `src/lib/copy.ts` e si riscrivono dalle
   Impostazioni; i pulsanti e le etichette dei campi restano fuori di proposito.

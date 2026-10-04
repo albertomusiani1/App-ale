@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { searchPlaces, type GeoPlace } from '../lib/geo'
+import { searchPlaces, type GeoPlace, type GeoEsito } from '../lib/geo'
 import { colorOf } from '../lib/colors'
 import type { ColorKey } from '../types'
 import { GeoMap } from './GeoMap'
@@ -7,6 +7,15 @@ import { GeoMap } from './GeoMap'
 /**
  * Cerca un posto e ne prende le coordinate, oppure le si sceglie toccando
  * direttamente la mappa. È il pezzo che alimenta tutte le mappe dell'app.
+ *
+ * Due regole se le porta dietro tutto il resto:
+ *
+ * - la ricerca dice sempre come è andata. Prima una lista vuota voleva dire
+ *   sia "questo posto non esiste" sia "il telefono è offline", e dal di fuori
+ *   sembrava semplicemente che non funzionasse niente;
+ * - la posizione non se la inventa nessuno. L'app non geolocalizza di nascosto
+ *   quello che scrivete nel titolo: finisce sulla mappa solo quello che avete
+ *   scelto voi, da un risultato o col dito.
  */
 export function PlacePicker({
   lat,
@@ -23,9 +32,10 @@ export function PlacePicker({
   hint?: string
 }) {
   const [query, setQuery] = useState('')
-  const [results, setResults] = useState<GeoPlace[]>([])
+  const [esito, setEsito] = useState<GeoEsito>({ stato: 'corto' })
   const [busy, setBusy] = useState(false)
   const [open, setOpen] = useState(false)
+  const [aMano, setAMano] = useState(false)
   const c = colorOf(color)
   const abort = useRef<AbortController | null>(null)
 
@@ -33,7 +43,8 @@ export function PlacePicker({
   // gratuito e chiede di non essere tempestato di richieste.
   useEffect(() => {
     if (query.trim().length < 3) {
-      setResults([])
+      setEsito({ stato: 'corto' })
+      setBusy(false)
       return
     }
     const timer = setTimeout(async () => {
@@ -41,16 +52,27 @@ export function PlacePicker({
       const controller = new AbortController()
       abort.current = controller
       setBusy(true)
-      const found = await searchPlaces(query, controller.signal)
-      if (!controller.signal.aborted) {
-        setResults(found)
-        setBusy(false)
-      }
+      const risposta = await searchPlaces(query, controller.signal)
+      if (controller.signal.aborted) return
+      setBusy(false)
+      // Una ricerca annullata è stata sostituita da quella dopo: lasciamo in
+      // piedi quello che c'è, senza far lampeggiare un messaggio.
+      if (risposta.stato !== 'annullato') setEsito(risposta)
     }, 500)
     return () => clearTimeout(timer)
   }, [query])
 
   const hasPoint = lat !== null && lng !== null
+  const risultati: GeoPlace[] = esito.stato === 'ok' ? esito.luoghi : []
+  const mostraMappa = hasPoint || aMano
+
+  function scegli(r: GeoPlace) {
+    onChange(r.lat, r.lng, r.name)
+    setQuery(r.name)
+    setEsito({ stato: 'corto' })
+    setOpen(false)
+    setAMano(false)
+  }
 
   return (
     <div className="space-y-2">
@@ -63,6 +85,7 @@ export function PlacePicker({
               onChange(null, null)
               setQuery('')
               setOpen(false)
+              setAMano(false)
             }}
             className="text-xs font-semibold text-muted underline"
           >
@@ -82,20 +105,25 @@ export function PlacePicker({
         }}
       />
 
-      {busy && <p className="text-xs text-muted">Cerco…</p>}
+      <Segnale
+        busy={busy}
+        esito={esito}
+        query={query}
+        aperto={open}
+        aMano={aMano}
+        suMappa={() => {
+          setAMano(true)
+          setOpen(false)
+        }}
+      />
 
-      {open && results.length > 0 && (
+      {open && risultati.length > 0 && (
         <ul className="max-h-48 overflow-y-auto rounded-2xl bg-white shadow-soft">
-          {results.map((r) => (
+          {risultati.map((r) => (
             <li key={`${r.lat},${r.lng}`}>
               <button
                 type="button"
-                onClick={() => {
-                  onChange(r.lat, r.lng, r.name)
-                  setQuery(r.name)
-                  setResults([])
-                  setOpen(false)
-                }}
+                onClick={() => scegli(r)}
                 className="w-full border-b border-black/5 px-4 py-2.5 text-left last:border-0 active:bg-black/5"
               >
                 <span className="block text-sm font-semibold">{r.name}</span>
@@ -106,22 +134,78 @@ export function PlacePicker({
         </ul>
       )}
 
-      {hasPoint ? (
+      {mostraMappa ? (
         <>
           <GeoMap
             height={180}
-            points={[{ id: 'scelto', lat, lng, label: query || 'Qui', color: c.hex, badge: '📍' }]}
+            points={
+              hasPoint
+                ? [{ id: 'scelto', lat, lng, label: query || 'Qui', color: c.hex, badge: '📍' }]
+                : []
+            }
             onPick={(newLat, newLng) => onChange(newLat, newLng)}
-            zoom={12}
+            zoom={hasPoint ? 12 : 5}
+            fit={false}
           />
           <p className="text-xs text-muted">
-            Tocca la mappa per spostare il segnaposto. {hint}
+            {hasPoint
+              ? `Tocca la mappa per spostare il segnaposto. ${hint ?? ''}`
+              : 'Avvicina la mappa e tocca il punto esatto: diventa la posizione.'}
           </p>
         </>
       ) : (
         <p className="text-xs text-muted">
           {hint ?? 'Senza posizione questo posto non comparirà sulle mappe.'}
         </p>
+      )}
+    </div>
+  )
+}
+
+/**
+ * La riga sotto al campo di ricerca. Dice sempre qualcosa, anche — soprattutto
+ * — quando non c'è niente da mostrare.
+ */
+function Segnale({
+  busy,
+  esito,
+  query,
+  aperto,
+  aMano,
+  suMappa,
+}: {
+  busy: boolean
+  esito: GeoEsito
+  query: string
+  aperto: boolean
+  aMano: boolean
+  suMappa: () => void
+}) {
+  if (busy) return <p className="text-xs text-muted">Cerco…</p>
+  if (!aperto) return null
+
+  const scritto = query.trim()
+  if (esito.stato === 'corto') {
+    return scritto.length > 0 ? (
+      <p className="text-xs text-muted">Ancora un paio di lettere e cerco.</p>
+    ) : null
+  }
+  if (esito.stato === 'ok' || esito.stato === 'annullato') return null
+
+  const testo =
+    esito.stato === 'vuoto'
+      ? `Non trovo «${scritto}». Prova col nome del comune, o mettilo sulla mappa a mano.`
+      : esito.stato === 'offline'
+        ? 'Non raggiungo il servizio delle mappe: forse è giù la rete. Puoi intanto scegliere il punto a mano.'
+        : 'Il servizio delle mappe ha fatto i capricci. Riprova fra poco, o scegli il punto a mano.'
+
+  return (
+    <div className="rounded-2xl bg-amber-50 px-3.5 py-2.5 text-xs text-amber-900">
+      <p>{testo}</p>
+      {!aMano && (
+        <button type="button" onClick={suMappa} className="mt-1 font-semibold underline">
+          Scelgo sulla mappa
+        </button>
       )}
     </div>
   )

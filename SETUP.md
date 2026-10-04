@@ -166,17 +166,38 @@ Per un nome più carino: **Site configuration** → **Change site name**.
 > aggiornamenti fino al ciclo successivo. Spiegato per bene in
 > [COSTI.md](COSTI.md).
 
-### Le tre variabili d'ambiente
+### Le variabili d'ambiente
 
-Valgono per entrambi gli hosting, con gli stessi nomi:
+Valgono per entrambi gli hosting, con gli stessi nomi. Le prime tre servono,
+la quarta è un di più.
 
 | Nome | Valore |
 |---|---|
 | `VITE_SUPABASE_URL` | il Project URL copiato al punto 1.4 |
 | `VITE_SUPABASE_ANON_KEY` | la chiave anon copiata al punto 1.4 |
 | `VITE_COUPLE_EMAIL` | l'email dell'account creato al punto 1.3 |
+| `VITE_CARTO_KEY` | facoltativa: lo sfondo tenue delle mappe (qui sotto) |
 
 I nomi vanno scritti **esattamente così**, maiuscole comprese.
+
+### Lo sfondo delle mappe (`VITE_CARTO_KEY`)
+
+Da fine agosto 2026 CARTO chiede una chiave anche a chi sta nel piano
+gratuito: senza, le tessere arrivano lo stesso ma con sopra stampato **"API
+KEY REQUIRED"**. L'app se ne accorge e, finché la chiave non c'è, disegna le
+mappe con lo sfondo di OpenStreetMap: più carico di colore, ma pulito e
+senza scritte. Niente è rotto, nel frattempo.
+
+Per riavere lo stile tenue:
+
+1. Vai su <https://carto.com/basemaps/apikey>. Non serve creare un account:
+   si lascia una mail e la chiave arriva subito.
+2. Copiala in una variabile `VITE_CARTO_KEY`, insieme alle altre tre.
+3. Ripubblica (**Deployments → Retry**), perché viene letta in compilazione.
+
+Il piano gratuito copre 5 milioni di tessere al mese. In due, guardando le
+mappe tutti i giorni, non ci si arriva neanche con il dito incollato allo
+schermo.
 
 ### Se cambi le variabili dopo aver pubblicato
 

@@ -1,12 +1,13 @@
 import { unzipSync } from 'fflate'
 
 /**
- * Lettura dei file esportati da Wanderlog (e, con gli stessi formati, da
- * Google My Maps, Maps.me, Komoot e compagnia).
+ * Lettura delle liste di posti esportate da un'altra app.
  *
- * Wanderlog esporta in KML/KMZ, GPX e CSV a seconda della versione e
- * dell'abbonamento, quindi li leggiamo tutti: meglio un lettore in più che
- * scoprire a metà viaggio che il proprio file non si apre.
+ * Il caso che ci interessa è **Mapstr**, che manda per mail un CSV e un
+ * GeoJSON con tutti i posti salvati. Ma i formati sono gli stessi che usano
+ * Google My Maps, Maps.me, Komoot e mezzo mondo, quindi li leggiamo tutti:
+ * meglio un lettore in più che scoprire a metà serata che il proprio file
+ * non si apre.
  */
 
 export interface ImportedPlace {
@@ -27,6 +28,7 @@ export async function parseTripFile(file: File): Promise<ImportedTrip> {
   const ext = file.name.toLowerCase().split('.').pop() ?? ''
   const fallbackTitle = file.name.replace(/\.[^.]+$/, '')
 
+  if (ext === 'json' || ext === 'geojson') return parseGeoJson(await file.text(), fallbackTitle)
   if (ext === 'kmz') return parseKml(await readKmzEntry(file), fallbackTitle)
   if (ext === 'kml') return parseKml(await file.text(), fallbackTitle)
   if (ext === 'gpx') return parseGpx(await file.text(), fallbackTitle)
@@ -34,10 +36,116 @@ export async function parseTripFile(file: File): Promise<ImportedTrip> {
 
   // Estensione sconosciuta: proviamo a capirlo dal contenuto.
   const text = await file.text()
+  if (text.trimStart().startsWith('{') || text.trimStart().startsWith('['))
+    return parseGeoJson(text, fallbackTitle)
   if (text.includes('<kml')) return parseKml(text, fallbackTitle)
   if (text.includes('<gpx')) return parseGpx(text, fallbackTitle)
   if (text.includes(',')) return parseCsv(text, fallbackTitle)
-  throw new Error('Non riconosco questo file. Esporta da Wanderlog in KML, GPX o CSV.')
+  throw new Error('Non riconosco questo file. Da Mapstr vanno bene il GeoJSON e il CSV.')
+}
+
+/**
+ * GeoJSON, che è il formato buono di Mapstr: ogni posto è una "feature" con
+ * le coordinate e un sacchetto di proprietà dal nome mai uguale fra un'app e
+ * l'altra, quindi i nomi probabili li proviamo tutti.
+ *
+ * Le coordinate stanno in [longitudine, latitudine]: l'ordine è al contrario
+ * di come si legge di solito, ed è l'errore che fa finire tutti i ristoranti
+ * in mezzo al mare.
+ */
+function parseGeoJson(text: string, fallbackTitle: string): ImportedTrip {
+  let root: unknown
+  try {
+    root = JSON.parse(text)
+  } catch {
+    throw new Error('Questo file non è un GeoJSON leggibile.')
+  }
+
+  const oggetto = root as { type?: string; name?: string; features?: unknown }
+  const features = Array.isArray(oggetto?.features)
+    ? (oggetto.features as Record<string, unknown>[])
+    : Array.isArray(root)
+      ? (root as Record<string, unknown>[])
+      : null
+  if (!features) throw new Error('Nel file non trovo la lista dei posti.')
+
+  const places: ImportedPlace[] = []
+  for (const feature of features) {
+    const props = (feature?.properties as Record<string, unknown> | undefined) ?? feature ?? {}
+    const geometry = feature?.geometry as { type?: string; coordinates?: unknown } | undefined
+
+    const coppia = primaCoppia(geometry?.coordinates)
+    // Qualche esportazione mette le coordinate fra le proprietà invece che
+    // nella geometria: prima della geometria non vince, ma se manca serve.
+    const lat = coppia ? coppia[1] : numero(props, 'lat', 'latitude', 'latitudine')
+    const lng = coppia ? coppia[0] : numero(props, 'lng', 'lon', 'long', 'longitude', 'longitudine')
+
+    const name = testo(props, 'name', 'nome', 'title', 'titolo', 'place', 'placename') || 'Senza nome'
+    const note = testo(props, 'comment', 'comments', 'note', 'notes', 'description', 'descrizione')
+    const indirizzo = testo(props, 'address', 'indirizzo', 'formatted_address', 'vicinity')
+    // Le etichette di Mapstr ("pizza", "da provare") sono il motivo per cui
+    // quella lista esiste: buttarle via sarebbe un peccato.
+    const etichette = elenco(props, 'tags', 'tag', 'categories', 'category')
+
+    if (name === 'Senza nome' && lat === null) continue
+    places.push({
+      name,
+      notes: [note, indirizzo, etichette].filter(Boolean).join(' · '),
+      lat,
+      lng,
+    })
+  }
+
+  const title = typeof oggetto?.name === 'string' && oggetto.name.trim() ? oggetto.name.trim() : fallbackTitle
+  return { title, places, format: 'GeoJSON' }
+}
+
+/** La prima coppia longitudine/latitudine, da qualunque profondità arrivi. */
+function primaCoppia(coords: unknown): [number, number] | null {
+  if (!Array.isArray(coords)) return null
+  if (typeof coords[0] === 'number' && typeof coords[1] === 'number') {
+    const [lng, lat] = coords as number[]
+    return Number.isFinite(lat) && Number.isFinite(lng) ? [lng, lat] : null
+  }
+  for (const figlio of coords) {
+    const trovata = primaCoppia(figlio)
+    if (trovata) return trovata
+  }
+  return null
+}
+
+/** Legge una proprietà di testo provando più nomi, senza badare a maiuscole. */
+function testo(props: Record<string, unknown>, ...nomi: string[]): string {
+  for (const chiave of Object.keys(props)) {
+    if (!nomi.includes(chiave.toLowerCase())) continue
+    const valore = props[chiave]
+    if (typeof valore === 'string' && valore.trim()) return stripHtml(valore)
+    if (typeof valore === 'number') return String(valore)
+  }
+  return ''
+}
+
+function numero(props: Record<string, unknown>, ...nomi: string[]): number | null {
+  for (const chiave of Object.keys(props)) {
+    if (!nomi.includes(chiave.toLowerCase())) continue
+    const valore = Number(props[chiave])
+    if (Number.isFinite(valore) && valore !== 0) return valore
+  }
+  return null
+}
+
+/** Le etichette arrivano come lista o come stringa separata da virgole. */
+function elenco(props: Record<string, unknown>, ...nomi: string[]): string {
+  for (const chiave of Object.keys(props)) {
+    if (!nomi.includes(chiave.toLowerCase())) continue
+    const valore = props[chiave]
+    if (Array.isArray(valore)) {
+      const voci = valore.map((v) => String(v).trim()).filter(Boolean)
+      if (voci.length) return voci.join(', ')
+    }
+    if (typeof valore === 'string' && valore.trim()) return valore.trim()
+  }
+  return ''
 }
 
 /** Un KMZ è uno zip con dentro un KML. */
@@ -121,6 +229,9 @@ function parseCsv(text: string, fallbackTitle: string): ImportedTrip {
   const iLng = find('longitude', 'lng', 'lon')
   const iNotes = find('note', 'description', 'descrizione', 'comment')
   const iAddr = find('address', 'indirizzo', 'formatted')
+  // Mapstr esporta le sue etichette in una colonna "tags": sono il modo in
+  // cui quella lista è organizzata, e vanno tenute.
+  const iTags = find('tag', 'categor', 'etichett')
 
   const places: ImportedPlace[] = []
   rows.slice(1).forEach((cells) => {
@@ -130,7 +241,11 @@ function parseCsv(text: string, fallbackTitle: string): ImportedTrip {
     const lng = iLng >= 0 ? Number(cells[iLng]) : NaN
     // Senza coordinate teniamo l'indirizzo fra le note: servirà per ritrovarlo
     // con la ricerca, invece di perdere la riga.
-    const notes = [iNotes >= 0 ? cells[iNotes] : '', iAddr >= 0 ? cells[iAddr] : '']
+    const notes = [
+      iNotes >= 0 ? cells[iNotes] : '',
+      iAddr >= 0 ? cells[iAddr] : '',
+      iTags >= 0 ? cells[iTags] : '',
+    ]
       .map((v) => (v ?? '').trim())
       .filter(Boolean)
       .join(' · ')
@@ -184,7 +299,7 @@ function splitCsv(text: string): string[][] {
   return rows.filter((r) => r.length > 0)
 }
 
-/** Le descrizioni di Wanderlog arrivano spesso piene di tag HTML. */
+/** Le descrizioni esportate arrivano spesso piene di tag HTML. */
 function stripHtml(s: string): string {
   return s
     .replace(/<br\s*\/?>/gi, '\n')

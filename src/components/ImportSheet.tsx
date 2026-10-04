@@ -3,17 +3,21 @@ import { useApp } from '../store/AppStore'
 import { randomId } from '../lib/image'
 import { colorOf } from '../lib/colors'
 import { copyFor } from '../lib/kinds'
-import { parseTripFile, type ImportedTrip } from '../lib/wanderlog'
+import { parseTripFile, type ImportedTrip } from '../lib/importPlaces'
 import type { Category, Item, Stop } from '../types'
 import { Sheet } from './Sheet'
 import { GeoMap } from './GeoMap'
 
 /**
- * Importazione di un file esportato da Wanderlog.
+ * Importazione della lista di posti esportata da un'altra app — Mapstr, in
+ * casa nostra.
  *
  * In una categoria viaggi il file diventa **un viaggio con le sue tappe**;
- * altrove diventa **una scheda per ogni posto**, che è quello che serve quando
- * si importa una lista di ristoranti.
+ * altrove diventa **una scheda per ogni posto**, che è quello che serve
+ * quando si importa una lista di ristoranti.
+ *
+ * Tutti i posti arrivano con la loro posizione già dentro, quindi dal momento
+ * dell'import compaiono sulla nostra mappa senza doverli ritoccare.
  */
 export function ImportSheet({
   open,
@@ -72,7 +76,7 @@ export function ImportSheet({
           status: 'wish',
           startDate: null,
           endDate: null,
-          notes: `Importato da Wanderlog (${parsed.format}).`,
+          notes: `Importato da Mapstr (${parsed.format}).`,
           ratingA: null,
           ratingB: null,
           meta: {},
@@ -137,7 +141,7 @@ export function ImportSheet({
         reset()
         onClose()
       }}
-      title="Importa da Wanderlog"
+      title="Importa da Mapstr"
       footer={
         parsed ? (
           <div className="flex gap-2">
@@ -159,22 +163,24 @@ export function ImportSheet({
       {!parsed && (
         <>
           <div className="card space-y-2 p-4 text-sm">
-            <p className="font-semibold">Come si esporta da Wanderlog</p>
+            <p className="font-semibold">Come si esporta da Mapstr</p>
             <ol className="list-decimal space-y-1 pl-5 text-muted">
-              <li>Apri il viaggio su Wanderlog <strong>da computer</strong>, non dall app.</li>
-              <li>Menù in alto → <strong>Export</strong>.</li>
-              <li>Scegli <strong>KML</strong> (o Google Maps). Se non c è, va bene anche <strong>CSV</strong>.</li>
-              <li>Carica qui il file scaricato.</li>
+              <li>Su Mapstr apri il <strong>Profilo</strong> e poi le <strong>Impostazioni</strong>.</li>
+              <li>Tocca <strong>Gestisci i tuoi dati</strong> → <strong>Esporta</strong>.</li>
+              <li>Il file arriva per mail: salvalo sul telefono.</li>
+              <li>Torna qui e caricalo.</li>
             </ol>
             <p className="text-xs text-muted">
-              Leggo file .kml, .kmz, .gpx e .csv. Il PDF no: non contiene le coordinate.
+              Mapstr manda un <strong>GeoJSON</strong> e un <strong>CSV</strong>: vanno bene
+              entrambi, il GeoJSON un filo meglio. Leggo anche .kml, .kmz e .gpx, nel caso
+              arrivino da qualche altra app. Il PDF no: non contiene le coordinate.
             </p>
           </div>
 
           <input
             ref={input}
             type="file"
-            accept=".kml,.kmz,.gpx,.csv,.tsv,application/vnd.google-earth.kml+xml"
+            accept=".geojson,.json,.kml,.kmz,.gpx,.csv,.tsv,application/geo+json,application/vnd.google-earth.kml+xml"
             className="hidden"
             onChange={(e) => void handleFile(e.target.files?.[0])}
           />

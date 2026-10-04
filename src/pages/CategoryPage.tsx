@@ -144,17 +144,36 @@ export function CategoryPage() {
             }))}
           />
           <p className="text-center text-xs text-muted">
-            {onMap.length} di {items.length} su questa mappa. Gli altri non hanno ancora una posizione.
+            {onMap.length} di {items.length} su questa mappa. Gli altri non hanno ancora una
+            posizione.{' '}
+            <Link to="/mappa" className="font-semibold underline">
+              Sono tutti insieme qui
+            </Link>
+            .
           </p>
         </div>
       ) : (
-        <ul className="space-y-2.5">
-          {items.map((item) => (
-            <li key={item.id}>
-              <ItemCard item={item} to={`/c/${category.id}/${item.id}`} color={category.color} />
-            </li>
-          ))}
-        </ul>
+        <>
+          <ul className="space-y-2.5">
+            {items.map((item) => (
+              <li key={item.id}>
+                <ItemCard item={item} to={`/c/${category.id}/${item.id}`} color={category.color} />
+              </li>
+            ))}
+          </ul>
+
+          {/*
+            Senza questa riga la mancanza della mappa non si spiega da sola:
+            il selettore Lista/Mappa semplicemente non compare, e sembra che
+            la mappa sia sparita invece che vuota.
+          */}
+          {onMap.length === 0 && (
+            <p className="mt-3 text-center text-xs text-muted">
+              Nessuno di questi ha una posizione, quindi sulla mappa non si vedono. Si aggiunge
+              aprendo la scheda: il campo è il primo in alto.
+            </p>
+          )}
+        </>
       )}
 
       <button
@@ -166,7 +185,7 @@ export function CategoryPage() {
       </button>
 
       <button onClick={() => setImporting(true)} className="btn-ghost mt-2 w-full">
-        🗺️ Importa da Wanderlog
+        🗺️ Importa da Mapstr
       </button>
 
       <ItemSheet
