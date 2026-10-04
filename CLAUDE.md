@@ -57,3 +57,10 @@ senza doverlo ripescare.
   restano tutti i comandi. La scelta sta in `settings.texts` (mappa già
   condivisa fra i due telefoni) e il segno di "già vista" in localStorage:
   nessuna delle due cose richiede una colonna nuova, quindi nessuna migrazione.
+- La presentazione parte **solo se l'app è ancora vuota** (niente anniversario,
+  elementi, impegni o modi di dire) e solo se il caricamento è andato a buon
+  fine. È la protezione che conta: i segni locali si perdono svuotando la
+  cache o cambiando telefono, e senza quel controllo la procedura di prima
+  configurazione ricomparirebbe a chi usa l'app da settimane, dando
+  l'impressione di aver perso tutto. "Rivedi la presentazione" la richiama
+  comunque a mano.

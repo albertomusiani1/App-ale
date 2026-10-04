@@ -56,8 +56,24 @@ function Shell() {
   /** Richiesta esplicita dalle impostazioni: vale per chiunque, una volta sola. */
   const [richiesto] = useState(takeWelcomeRequest)
   const destinatario = welcomeTarget(data.settings.texts)
+  /**
+   * La presentazione è una prima configurazione: proporla a chi usa l'app da
+   * settimane non solo è inutile, sembra che si sia perso tutto. Quindi parte
+   * solo quando dentro non c'è ancora niente.
+   *
+   * Il controllo sull'errore non è pignoleria: se il caricamento fallisce i
+   * dati risultano vuoti pur essendo al loro posto, e senza questa riga un
+   * problema di rete si presenterebbe come un'app da rifare da capo.
+   */
+  const appVuota =
+    !error &&
+    !data.settings.anniversary &&
+    data.items.length === 0 &&
+    data.events.length === 0 &&
+    data.sayings.length === 0
+
   const mostraWelcome =
-    !welcomeChiuso && (richiesto || (me === destinatario && !welcomeSeen(me)))
+    !welcomeChiuso && (richiesto || (me === destinatario && !welcomeSeen(me) && appVuota))
 
   if (loading) return <Splash />
   if (!me) return <WhoAreYou nameA={data.settings.nameA} nameB={data.settings.nameB} />
