@@ -43,7 +43,7 @@ function Splash() {
 }
 
 function Shell() {
-  const { data, loading, error } = useApp()
+  const { data, loading, error, warning } = useApp()
   const { me } = useAuth()
   const location = useLocation()
   const [addOpen, setAddOpen] = useState(false)
@@ -72,6 +72,17 @@ function Shell() {
           className="sticky top-0 z-40 bg-red-600 px-4 py-2 text-center text-sm font-semibold text-white"
         >
           {error}
+        </div>
+      )}
+
+      {/* Un avviso è giallo e non rosso: c'è qualcosa da sistemare, ma niente
+          è rotto, e usare il colore dell'allarme per entrambi li svuota. */}
+      {!error && warning && (
+        <div
+          role="status"
+          className="sticky top-0 z-40 bg-[#FFF0C2] px-4 py-2 text-center text-sm font-semibold text-[#7A5600]"
+        >
+          ⚠️ {warning}
         </div>
       )}
 

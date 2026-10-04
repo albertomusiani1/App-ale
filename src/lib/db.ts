@@ -51,9 +51,20 @@ export const emptyDataset = (): Dataset => ({
   settings: { ...DEFAULT_SETTINGS },
 })
 
+/**
+ * Il risultato di un caricamento.
+ *
+ * `warning` serve per i guai che non devono spegnere l'app: tipicamente una
+ * tabella aggiunta da una versione nuova e non ancora creata nel database.
+ */
+export interface LoadResult {
+  data: Dataset
+  warning: string | null
+}
+
 export interface Backend {
   mode: 'cloud' | 'local'
-  load(): Promise<Dataset>
+  load(): Promise<LoadResult>
   save<K extends TableName>(table: K, row: Dataset[K][number]): Promise<void>
   remove(table: TableName, id: string): Promise<void>
   saveSettings(settings: Settings): Promise<void>
@@ -305,6 +316,19 @@ const settingsFrom = (r: AnyRow): Settings => ({
  * Backend cloud (Supabase)
  * ------------------------------------------------------------------ */
 
+/**
+ * Distingue "questa tabella non esiste" da un errore vero.
+ *
+ * PostgREST risponde PGRST205 quando non trova la tabella nella sua cache
+ * dello schema; Postgres userebbe 42P01. Controlliamo anche il testo perché
+ * questi codici cambiano fra le versioni, e sbagliare qui vorrebbe dire
+ * mostrare una schermata rotta al posto di un avviso.
+ */
+function tabellaMancante(error: { code?: string; message?: string }): boolean {
+  if (error.code === 'PGRST205' || error.code === '42P01') return true
+  return /could not find the table|does not exist/i.test(error.message ?? '')
+}
+
 /** Quanto resta valido un indirizzo firmato: una settimana. */
 const SIGNED_URL_TTL = 60 * 60 * 24 * 7
 /** Quando manca meno di un giorno alla scadenza lo rifirmiamo. */
@@ -401,16 +425,35 @@ function cloudBackend(client: NonNullable<typeof supabase>): Backend {
       const names = Object.keys(TABLE_NAMES) as TableName[]
       const results = await Promise.all(names.map((n) => client.from(TABLE_NAMES[n]).select('*')))
       const data = emptyDataset()
+      const mancanti: string[] = []
+
       names.forEach((name, i) => {
         const { data: rows, error } = results[i]
-        if (error) throw new Error(`Lettura di ${name} fallita: ${error.message}`)
+        if (error) {
+          // Una tabella che ancora non esiste non è un guasto: è una versione
+          // nuova dell'app su un database vecchio. Il resto dei dati c'è
+          // tutto, e spegnere l'intera app per una funzione sola sarebbe la
+          // reazione peggiore possibile.
+          if (tabellaMancante(error)) {
+            mancanti.push(TABLE_NAMES[name])
+            return
+          }
+          throw new Error(`Lettura di ${name} fallita: ${error.message}`)
+        }
         // Il cast è necessario perché TypeScript non collega l'indice al tipo della tabella.
         ;(data[name] as unknown[]) = (rows ?? []).map((r) => mappers[name].from(r as AnyRow))
       })
+
       const { data: settingsRow } = await client.from('settings').select('*').eq('id', 1).maybeSingle()
       if (settingsRow) data.settings = settingsFrom(settingsRow as AnyRow)
       data.photos = await signPhotos(client, data.photos)
-      return data
+
+      return {
+        data,
+        warning: mancanti.length
+          ? `Il database non ha ancora ${mancanti.length === 1 ? 'la tabella' : 'le tabelle'} ${mancanti.join(', ')}. Il resto funziona: per completare, rilancia supabase/schema.sql dall SQL Editor di Supabase.`
+          : null,
+      }
     },
 
     async save(table, row) {
@@ -509,7 +552,7 @@ function localBackend(): Backend {
           }),
         )
       ).filter((p): p is Photo => p !== null)
-      return data
+      return { data, warning: null }
     },
 
     async save(table, row) {

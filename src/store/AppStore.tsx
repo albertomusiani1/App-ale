@@ -55,6 +55,8 @@ interface AppValue {
   data: Dataset
   loading: boolean
   error: string | null
+  /** Qualcosa da sistemare che però non impedisce di usare l'app. */
+  warning: string | null
   mode: 'cloud' | 'local'
   /** Legge una frase, tenendo conto di quelle riscritte da voi. */
   t: Translate
@@ -100,15 +102,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [data, setData] = useState<Dataset>(emptyDataset)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [warning, setWarning] = useState<string | null>(null)
   const [celebration, setCelebration] = useState<Celebration | null>(null)
   /** Evita che un salvataggio appena fatto da noi scateni un ricarico inutile. */
   const writingRef = useRef(0)
 
   const load = useCallback(async () => {
     try {
-      const loaded = await backend.load()
+      const { data: loaded, warning: avviso } = await backend.load()
       const seeded = await seedIfNeeded(loaded)
       setData(seeded)
+      // Un avviso non è un errore: l'app funziona, manca solo un pezzo da
+      // creare nel database, e la riga in alto dice come.
+      setWarning(avviso)
       setError(null)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Qualcosa è andato storto nel caricamento.')
@@ -495,6 +501,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       data,
       loading,
       error,
+      warning,
       mode: backend.mode,
       t,
       saveItem,
@@ -526,7 +533,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       refresh: load,
     }),
     [
-      data, loading, error, t, saveItem, deleteItem, saveStop, deleteStop, saveStopDay,
+      data, loading, error, warning, t, saveItem, deleteItem, saveStop, deleteStop, saveStopDay,
       saveEvent, deleteEvent, saveCategory, deleteCategory, saveAchievement, deleteAchievement,
       answerExam, snoozeExam, pendingExam, saveFix, deleteFix,
       saveSaying, deleteSaying, saveQuote, deleteQuote, updateSettings, addPhoto, deletePhoto,

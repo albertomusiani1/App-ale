@@ -22,9 +22,11 @@ senza doverlo ripescare.
 
 1. Push sul branch: Cloudflare compila da solo.
 2. Se il build non parte: **Deployments → Retry build**.
-3. Se lo schema del database è cambiato, **prima** va rilanciato
-   `supabase/schema.sql` dall'SQL Editor di Supabase: le colonne nuove non si
-   creano da sole, e l'app dà errore appena prova a scriverci.
+3. Se lo schema del database è cambiato, va rilanciato `supabase/schema.sql`
+   dall'SQL Editor di Supabase: colonne e tabelle nuove non si creano da sole.
+   Se manca una tabella l'app non si rompe — lo dice in una riga gialla in
+   cima e il resto continua a funzionare — ma quella funzione resta spenta
+   finché lo script non viene rilanciato.
 4. Sul telefono serve una ricarica forzata (`Ctrl+Shift+R`): il service worker
    tiene in cache la versione precedente.
 
