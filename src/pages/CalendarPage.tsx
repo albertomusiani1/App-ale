@@ -5,6 +5,7 @@ import { addMonths, isSameMonth, isToday, subMonths } from 'date-fns'
 import { useApp } from '../store/AppStore'
 import { buildCalendar, type DayEntry } from '../lib/calendar'
 import { colorOf } from '../lib/colors'
+import { siglaWhose } from '../lib/people'
 import {
   WEEKDAYS,
   daysToAnniversary,
@@ -216,7 +217,13 @@ export function CalendarPage() {
                     <span className="min-w-0 flex-1">
                       <span className="block truncate font-bold">{entry.title}</span>
                       <span className="block truncate text-sm text-muted">
-                        {[entry.time, dettaglio(entry)].filter(Boolean).join(' · ')}
+                        {[
+                          entry.time,
+                          siglaWhose(entry.whose, data.settings),
+                          dettaglio(entry),
+                        ]
+                          .filter(Boolean)
+                          .join(' · ')}
                       </span>
                     </span>
                     <span className="text-muted" aria-hidden>

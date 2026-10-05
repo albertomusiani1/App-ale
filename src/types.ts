@@ -1,6 +1,14 @@
 /** Chi dei due ha scritto / votato. */
 export type Person = 'a' | 'b'
 
+/**
+ * Di chi è un impegno: di uno dei due, o di tutti e due.
+ *
+ * È una cosa diversa da `author`, che dice chi l'ha scritto: capita spesso di
+ * segnare in calendario il dentista dell'altro.
+ */
+export type Whose = Person | 'both'
+
 /** Le palette disponibili, una per categoria. Vedi tailwind.config.js -> colors.cat */
 export type ColorKey =
   | 'agenda'
@@ -114,6 +122,11 @@ export interface CalEvent {
   color: ColorKey
   /** Chi dei due lo ha messo in calendario. */
   author: Person | null
+  /**
+   * Di chi è l'impegno. `null` sono quelli segnati prima che esistesse
+   * questo campo: non vanno attribuiti a nessuno per finta.
+   */
+  whose: Whose | null
   /**
    * Gli impegni che hanno "esame" nel titolo diventano esami: passata la
    * data, l'app chiede com'è andata.

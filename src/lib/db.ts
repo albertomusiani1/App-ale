@@ -202,6 +202,7 @@ const mappers: { [K in TableName]: { to: (v: Dataset[K][number]) => AnyRow; from
       notes: e.notes,
       color: e.color,
       author: e.author,
+      whose: e.whose,
       exam_outcome: e.examOutcome,
       exam_ask_after: e.examAskAfter,
       created_at: e.createdAt,
@@ -215,6 +216,7 @@ const mappers: { [K in TableName]: { to: (v: Dataset[K][number]) => AnyRow; from
       notes: (r.notes as string) ?? '',
       color: (r.color as CalEvent['color']) ?? 'agenda',
       author: (r.author as CalEvent['author']) ?? null,
+      whose: (r.whose as CalEvent['whose']) ?? null,
       examOutcome: (r.exam_outcome as ExamOutcome) ?? null,
       examAskAfter: (r.exam_ask_after as string) ?? null,
       createdAt: (r.created_at as string) ?? new Date().toISOString(),
@@ -324,6 +326,23 @@ const settingsFrom = (r: AnyRow): Settings => ({
  * questi codici cambiano fra le versioni, e sbagliare qui vorrebbe dire
  * mostrare una schermata rotta al posto di un avviso.
  */
+/**
+ * Il nome della colonna che il database non conosce, se l'errore è quello.
+ *
+ * PostgREST lo dice in chiaro — «Could not find the 'whose' column of
+ * 'events' in the schema cache» — e ci fidiamo solo di quel formato: un
+ * messaggio diverso è un errore diverso, e va lasciato passare.
+ */
+function colonnaMancante(error: { code?: string; message?: string }): string | null {
+  const trovata = /could not find the '([^']+)' column/i.exec(error.message ?? '')
+  if (trovata) return trovata[1]
+  if (error.code === 'PGRST204') {
+    const alternativa = /'([^']+)' column/i.exec(error.message ?? '')
+    return alternativa ? alternativa[1] : null
+  }
+  return null
+}
+
 function tabellaMancante(error: { code?: string; message?: string }): boolean {
   if (error.code === 'PGRST205' || error.code === '42P01') return true
   return /could not find the table|does not exist/i.test(error.message ?? '')
@@ -458,8 +477,22 @@ function cloudBackend(client: NonNullable<typeof supabase>): Backend {
 
     async save(table, row) {
       const payload = mappers[table].to(row as never)
-      const { error } = await client.from(TABLE_NAMES[table]).upsert(payload)
-      if (error) throw new Error(`Salvataggio in ${table} fallito: ${error.message}`)
+
+      // Stessa idea della tabella che manca, un gradino più in basso: se il
+      // database è ancora alla versione di prima, una colonna nuova lo fa
+      // rifiutare *tutto*, e non si riuscirebbe più a salvare niente di quel
+      // tipo. Meglio rinunciare al campo nuovo che al salvataggio: quel
+      // valore tornerà appena lo schema viene rilanciato.
+      for (let tentativo = 0; tentativo < 4; tentativo++) {
+        const { error } = await client.from(TABLE_NAMES[table]).upsert(payload)
+        if (!error) return
+        const colonna = colonnaMancante(error)
+        if (!colonna || !(colonna in payload)) {
+          throw new Error(`Salvataggio in ${table} fallito: ${error.message}`)
+        }
+        delete payload[colonna]
+      }
+      throw new Error(`Salvataggio in ${table} fallito: troppe colonne mancanti.`)
     },
 
     async remove(table, id) {

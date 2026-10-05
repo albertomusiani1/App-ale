@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useApp } from '../store/AppStore'
 import { colorOf } from '../lib/colors'
+import { nomeDi, siglaWhose } from '../lib/people'
 import { todayISO } from '../lib/dates'
 import { EventSheet } from '../components/EventSheet'
 import { Empty, PageTitle } from '../components/ui'
@@ -29,13 +30,14 @@ export function PlansPage() {
     }
   }, [data.events, today])
 
-  const who = (e: CalEvent) =>
-    e.author === 'a' ? data.settings.nameA : e.author === 'b' ? data.settings.nameB : null
-
   const row = (e: CalEvent) => {
     const c = colorOf(e.color)
     const isExam = /esame/i.test(e.title)
-    const author = who(e)
+    const author = nomeDi(e.author, data.settings)
+    const di = siglaWhose(e.whose, data.settings)
+    // "di Mimi · scritto da Mimi" non dice niente in più: la firma si mostra
+    // solo quando è stato l'altro a segnarlo in calendario.
+    const firma = e.author && e.whose !== 'both' && e.author !== e.whose ? author : null
     return (
       <li key={e.id}>
         <button
@@ -55,8 +57,9 @@ export function PlansPage() {
               {e.title}
             </span>
             <span className="block truncate text-sm text-muted">
-              {e.time && <>🕐 {e.time} · </>}
-              {author ? `scritto da ${author}` : 'senza firma'}
+              {[e.time && `🕐 ${e.time}`, di && `di ${di}`, firma && `segnato da ${firma}`]
+                .filter(Boolean)
+                .join(' · ') || 'senza orario'}
             </span>
           </span>
           {isExam && e.examOutcome && (

@@ -4,6 +4,7 @@ import { useAuth } from '../store/AuthContext'
 import { randomId } from '../lib/image'
 import { COLOR_KEYS, colorOf } from '../lib/colors'
 import { todayISO } from '../lib/dates'
+import { scelteWhose, nomeDi } from '../lib/people'
 import type { CalEvent } from '../types'
 import { ConfirmButton, Sheet } from './Sheet'
 import { Field, FieldGroup, Input, TextArea } from './ui'
@@ -17,6 +18,7 @@ const blankEvent = (date: string): CalEvent => ({
   notes: '',
   color: 'agenda',
   author: null,
+  whose: null,
   examOutcome: null,
   examAskAfter: null,
   createdAt: new Date().toISOString(),
@@ -36,17 +38,21 @@ export function EventSheet({
 }) {
   const { saveEvent, deleteEvent, data, t } = useApp()
   const { me } = useAuth()
-  const [draft, setDraft] = useState<CalEvent>(() => event ?? blankEvent(defaultDate ?? todayISO()))
+  // Un impegno nuovo nasce intestato a chi lo sta scrivendo: è il caso più
+  // frequente, e per cambiarlo basta un tocco. Quelli già esistenti non si
+  // toccano, nemmeno quelli vecchi senza intestazione.
+  const nuovo = () => ({ ...blankEvent(defaultDate ?? todayISO()), whose: me })
+  const [draft, setDraft] = useState<CalEvent>(() => event ?? nuovo())
 
   useEffect(() => {
-    if (open) setDraft(event ?? blankEvent(defaultDate ?? todayISO()))
-  }, [open, event, defaultDate])
+    if (open) setDraft(event ?? nuovo())
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, event, defaultDate, me])
 
   const set = <K extends keyof CalEvent>(k: K, v: CalEvent[K]) => setDraft((d) => ({ ...d, [k]: v }))
   const canSave = draft.title.trim().length > 0 && Boolean(draft.date)
   const isExam = /esame/i.test(draft.title)
-  const author =
-    draft.author === 'a' ? data.settings.nameA : draft.author === 'b' ? data.settings.nameB : null
+  const author = nomeDi(draft.author, data.settings)
 
   return (
     <Sheet
@@ -107,6 +113,33 @@ export function EventSheet({
           onChange={(e) => set('endDate', e.target.value || null)}
         />
       </Field>
+
+      <FieldGroup
+        label="Di chi è"
+        hint="Serve a sapere chi è occupato, che è la domanda vera quando si incastrano due settimane."
+      >
+        <div className="flex gap-2">
+          {scelteWhose(data.settings).map(({ value, label }) => {
+            const active = draft.whose === value
+            const c = colorOf(value === 'both' ? 'goals' : 'agenda')
+            return (
+              <button
+                key={value}
+                type="button"
+                onClick={() => set('whose', value)}
+                className="flex-1 rounded-2xl border px-2 py-2.5 text-sm font-semibold transition active:scale-95"
+                style={
+                  active
+                    ? { background: c.hex, color: c.on, borderColor: c.hex }
+                    : { background: '#fff', borderColor: 'rgba(0,0,0,0.08)' }
+                }
+              >
+                {label}
+              </button>
+            )
+          })}
+        </div>
+      </FieldGroup>
 
       <FieldGroup label="Colore">
         <div className="flex flex-wrap gap-2">

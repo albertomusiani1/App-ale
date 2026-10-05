@@ -81,6 +81,7 @@ create table if not exists public.events (
   notes      text not null default '',
   color      text not null default 'agenda',
   author     text,
+  whose      text,
   exam_outcome   text,
   exam_ask_after date,
   created_at timestamptz not null default now()
@@ -162,6 +163,7 @@ alter table public.items    add column if not exists visits integer not null def
 alter table public.events   add column if not exists author text;
 alter table public.events   add column if not exists exam_outcome text;
 alter table public.events   add column if not exists exam_ask_after date;
+alter table public.events   add column if not exists whose text;
 
 -- I traguardi numerati (1, 5, 10 viaggi...) sono diventati "scale" a livelli,
 -- che crescono da sole: le vecchie schede non servono più. Tocchiamo solo

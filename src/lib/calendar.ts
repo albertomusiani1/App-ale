@@ -1,4 +1,4 @@
-import type { ColorKey } from '../types'
+import type { ColorKey, Whose } from '../types'
 import type { Dataset } from './db'
 import { datesBetween } from './dates'
 
@@ -12,6 +12,8 @@ export interface DayEntry {
   color: ColorKey
   emoji: string
   time: string | null
+  /** Di chi è, per gli impegni: sul calendario conta più dell'orario. */
+  whose: Whose | null
   /** Per aprire la scheda giusta al tocco. */
   refId: string
   categoryId: string | null
@@ -47,6 +49,7 @@ export function buildCalendar(data: Dataset): Map<string, DayEntry[]> {
         color: event.color,
         emoji: '📌',
         time: event.time,
+        whose: event.whose,
         refId: event.id,
         categoryId: null,
         isStart: i === 0,
@@ -70,6 +73,8 @@ export function buildCalendar(data: Dataset): Map<string, DayEntry[]> {
         color: category.color,
         emoji: category.emoji,
         time: null,
+        // Un viaggio o una cena sono di tutti e due per come sono fatti.
+        whose: null,
         refId: item.id,
         categoryId: category.id,
         isStart: i === 0,

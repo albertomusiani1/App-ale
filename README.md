@@ -126,8 +126,13 @@ una foto dalla nostra galleria.
 
 ### 📌 Impegni
 Chiunque dei due scrive un impegno con data e ora, e l'altro lo vede sul
-calendario. La sezione **Impegni** li mette in fila — in arrivo e già passati —
-con la firma di chi li ha messi.
+calendario. La sezione **Impegni** li mette in fila — in arrivo e già passati.
+
+Ogni impegno dice **di chi è**: di uno dei due o di tutti e due. È una cosa
+diversa da chi l'ha scritto, perché capita spesso di segnare in calendario il
+dentista dell'altro: quando le due cose non coincidono si legge *"di Tutu ·
+segnato da Mimi"*. Nasce già intestato a chi lo sta scrivendo, che è il caso
+più frequente, e per cambiarlo basta un tocco.
 
 Gli impegni che hanno **"esame"** nel titolo sono speciali: passata la data
 l'app chiede com'è andata, si può rispondere o rimandare di tre giorni, e ogni

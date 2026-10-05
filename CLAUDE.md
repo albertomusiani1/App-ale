@@ -54,6 +54,16 @@ senza doverlo ripescare.
 - L'app **non indovina le posizioni**. Niente geolocalizzazione automatica di
   quello che si scrive nel titolo: sulla mappa va solo quello che è stato
   scelto a mano, da un risultato di ricerca o con un tocco.
+- Gli impegni hanno due campi distinti che è facile confondere: `author` è chi
+  l'ha scritto, `whose` è **di chi è** (uno dei due o `both`). La firma si
+  mostra solo quando non coincidono, se no si legge "di Mimi · segnato da
+  Mimi". `whose` è arrivato dopo, quindi quelli vecchi ce l'hanno a `null` e
+  non vanno attribuiti a nessuno per finta.
+- Il salvataggio regge anche una **colonna** che il database non ha ancora:
+  ritenta senza quel campo invece di fallire del tutto, così una versione
+  nuova dell'app su uno schema vecchio continua a salvare e perde solo il
+  valore nuovo. Vale la stessa logica delle tabelle mancanti, un gradino più
+  in basso.
 - I testi dell'app sono in prima persona plurale ("noi"), non "voi".
 - Le frasi con personalità stanno in `src/lib/copy.ts` e si riscrivono dalle
   Impostazioni; i pulsanti e le etichette dei campi restano fuori di proposito.
